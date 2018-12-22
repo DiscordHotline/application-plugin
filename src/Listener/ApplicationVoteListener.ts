@@ -33,7 +33,8 @@ export default class ApplicationVoteListener {
     ) {
         this.repo = connection.getRepository(Application);
         client.on('messageCreate', this.onMessageCreate.bind(this));
-        client.on('messageReactionAdd', this.onMessageReactionAdd.bind(this));
+        client.on('messageReactionAdd', this.onMessageReaction.bind(this));
+        client.on('messageReactionRemove', this.onMessageReaction.bind(this));
     }
 
     public async initialize(): Promise<void> {
@@ -75,7 +76,7 @@ export default class ApplicationVoteListener {
         );
     }
 
-    private async onMessageReactionAdd(
+    private async onMessageReaction(
         voteMessage: Message,
         _emoji: { id: string, name: string },
         userId: string,
@@ -180,6 +181,18 @@ export default class ApplicationVoteListener {
 
             this.logger.info(
                 'Public Vote is still awaiting for "%s" (2x denies, A: %d, D: %d)',
+                application.server,
+                vote.approvals,
+                vote.denies,
+            );
+
+            approved = ApprovalType.AWAITING;
+        } else if (vote.approvals >= 1 && vote.denies >= 2) {
+            // If there are *more* than 5 approvals, but less than twice as many approvals as denies, we need more
+            // approvals.
+
+            this.logger.info(
+                'Public Vote is still awaiting for "%s" (>= 2 denies, A: %d, D: %d)',
                 application.server,
                 vote.approvals,
                 vote.denies,
