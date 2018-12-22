@@ -13,9 +13,9 @@ interface ApplicationMessage {
     approvalMessage: Message;
 }
 
-const APPROVALS_REQUIRED  = 1;
-const DENIALS_REQUIRED    = 1;
-const MULTIPLIER_REQUIRED = 1;
+const APPROVALS_REQUIRED  = 5;
+const DENIALS_REQUIRED    = 5;
+const MULTIPLIER_REQUIRED = 2;
 
 @injectable()
 export default class ApplicationVoteListener {
