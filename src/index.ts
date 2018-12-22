@@ -8,6 +8,7 @@ import ApplicationVoteListener from './Listener/ApplicationVoteListener';
 import Types from './types';
 
 export interface Config {
+    hotlineGuildId: string;
     approvalChannel: string;
     voteChannel: string;
     inviteChannel: string;

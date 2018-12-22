@@ -235,6 +235,14 @@ export default class ApplicationVoteListener {
             );
             application.hotlineInviteCode = invite.code;
 
+            // @todo Alphabetize roles after creating.
+            const guild              = this.client.guilds.get(this.config.hotlineGuildId);
+            const role               = await guild.createRole({
+                name:        application.server.replace(/[\W_]+/g, ''),
+                permissions: 0,
+            });
+            application.serverRoleId = role.id;
+
             const msg = await dm.createMessage({
                 embed: {
                     description: `Your application for ${application.server} has passed!
