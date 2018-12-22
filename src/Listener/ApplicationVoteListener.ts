@@ -224,16 +224,8 @@ export default class ApplicationVoteListener {
         const requester = await this.client.users.get(application.requestUser);
         const dm        = await requester.getDMChannel();
         if (approved === ApprovalType.APPROVED) {
-            const invite                  = await this.client.createChannelInvite(
-                this.config.inviteChannel,
-                {
-                    maxAge:    0,
-                    maxUses:   0,
-                    temporary: false,
-                    unique:    true,
-                },
-            );
-            application.hotlineInviteCode = invite.code;
+            const invite = this.makeId(8);
+            application.hotlineInviteCode = invite;
 
             // @todo Alphabetize roles after creating.
             const guild              = this.client.guilds.get(this.config.hotlineGuildId);
@@ -251,7 +243,7 @@ Here is the permanent invite link for this.
 Please pass this along to the people who want to join the server.
 If you are also a member of this server, please click the link.
 
-https://apply.hotline.gg/${invite.code}
+https://apply.hotline.gg/${invite}
 `,
                 },
             });
@@ -271,5 +263,16 @@ https://apply.hotline.gg/${invite.code}
         await message.addReaction('👌');
 
         return true;
+    }
+
+    private makeId(length: number): string {
+        let text     = '';
+        let possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+
+        for (let i = 0; i < length; i++) {
+            text += possible.charAt(Math.floor(Math.random() * possible.length));
+        }
+
+        return text;
     }
 }
