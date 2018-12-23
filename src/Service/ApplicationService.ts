@@ -72,8 +72,11 @@ export default class ApplicationService {
         const [channelId, messageId] = application.voteMessageId.split(':');
         const message                = await this.client.getMessage(channelId, messageId);
 
-        await message.addReaction('✅');
-        await message.addReaction('❌');
+        try {
+            await message.addReaction('✅');
+            await message.addReaction('❌');
+        } catch (ignored) {
+        }
 
         const now  = moment();
         const date = moment(application.approvedDate);
