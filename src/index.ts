@@ -2,7 +2,7 @@ import {AbstractPlugin} from 'eris-command-framework';
 import Decorator from 'eris-command-framework/Decorator';
 import {Container, inject, injectable} from 'inversify';
 
-import Application, {ApprovalType} from './Entity/Application';
+import Application, {ApprovalType, VoteType} from './Entity/Application';
 import ApplicationApprovalListener from './Listener/ApplicationApprovalListener';
 import ApplicationVoteListener from './Listener/ApplicationVoteListener';
 import ApplicationService from './Service/ApplicationService';
@@ -72,5 +72,31 @@ export default class extends AbstractPlugin {
 
         await this.appService.approveOrDeny(application, ApprovalType.DENIED);
         await this.reactOk();
+    }
+
+    @Decorator.Command('app-view', 'Views an application')
+    @Decorator.Permission('application.view')
+    public async ViewCommand(id: number): Promise<void> {
+        const application = await this.getRepository<Application>(Application).findOne(id);
+        if (!application) {
+            return await this.reactNotOk();
+        }
+
+        const fields = [];
+        for (const userId of Object.keys(application.votes.entries)) {
+            const user = this.client.users.get(userId);
+            const vote = application.votes.entries[userId];
+
+            fields.push({
+                name:   user.username + '#' + user.discriminator,
+                value:  vote === VoteType.APPROVED ? 'Approve' : 'Deny',
+                inline: true,
+            });
+        }
+
+        await this.embedMessage((x) => {
+            x.title = 'Vote Results for: ' + application.server;
+            x.fields = fields;
+        });
     }
 };

@@ -96,7 +96,7 @@ export default class ApplicationService {
             timestamp:   application.approvedDate,
             author:      {
                 name:    `${requester.username}#${requester.discriminator}`,
-                iconUrl: requester.defaultAvatarURL,
+                iconUrl: requester.dynamicAvatarURL(),
             },
             thumbnail:   {
                 url: `https://cdn.discordapp.com/icons/${invite.guild.id}/${invite.guild.icon}.webp`,
