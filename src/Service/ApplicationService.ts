@@ -1,5 +1,6 @@
 import {Client, Message, TextableChannel} from 'eris';
 import {types as CFTypes} from 'eris-command-framework';
+import Embed from 'eris-command-framework/Model/Embed';
 import {inject, injectable} from 'inversify';
 import * as millisec from 'millisec';
 import * as moment from 'moment';
@@ -85,27 +86,43 @@ export default class ApplicationService {
         } catch (ignored) {
         }
 
-        const now  = moment();
-        const date = moment(application.approvedDate);
+        const now      = moment();
+        const date     = moment(application.approvedDate);
         const diffDays = now.diff(date, 'days');
         let timeLeft: string;
         if (diffDays < 0) {
             timeLeft = 'None';
         } else {
             const duration = moment.duration(date.add(3, 'd').diff(now)).asMilliseconds();
-            timeLeft = millisec(duration).format('DD HH MM');
+            timeLeft       = millisec(duration).format('DD HH MM');
         }
 
-        const embed = message.embeds[0];
-        embed.footer = {text: `Application ID: ${application.id} | Time Left: ${timeLeft}`};
-        await message.edit({embed});
+        const requester = await this.client.users.get(application.requestUser);
+        const invite    = await this.client.getInvite(
+            application.inviteCode.replace(/https:\/\/discord\.gg\//, ''),
+            true,
+        );
+
+        const embed: Embed = new Embed({
+            title:       `New Application Request From: ${requester.username}#${requester.discriminator}`,
+            description: `${application.server}\n\n${application.reason}`,
+            timestamp:   application.insertDate,
+            fields:      [
+                {name: 'Invite: ', value: application.inviteCode, inline: true},
+                {name: 'Members: ', value: `${invite.presenceCount} / ${invite.memberCount}`, inline: true},
+            ],
+            footer:      {
+                text: `Application ID: ${application.id} | Time Left: ${timeLeft}`,
+            },
+        });
+        await message.edit({embed: embed.serialize()});
 
         if (diffDays < 3) {
             return;
         }
 
-        const votes                  = await this.getVotes(message);
-        const approved               = this.getApproval(application, votes);
+        const votes    = await this.getVotes(message);
+        const approved = this.getApproval(application, votes);
 
         if (approved !== ApprovalType.AWAITING) {
             await this.approveOrDeny(application, approved, votes);

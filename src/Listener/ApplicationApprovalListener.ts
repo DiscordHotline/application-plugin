@@ -150,7 +150,11 @@ export default class ApplicationApprovalListener {
     ): Promise<boolean> {
         const reactions = message.reactions;
         if (Object.keys(reactions).length === 0) {
-            return false;
+            try {
+                await message.addReaction('✅');
+                await message.addReaction('❌');
+            } catch (ignored) {
+            }
         }
 
         let approved = ApprovalType.AWAITING;
@@ -189,10 +193,20 @@ export default class ApplicationApprovalListener {
 
         this.logger.info('Approval vote has been approved for "%s"', application.server);
 
+        const invite = await this.client.getInvite(application.inviteCode.replace(/https:\/\/discord\.gg\//, ''), true);
+
         const embed: Embed        = new Embed({
             title:       `New Application Request From: ${requester.username}#${requester.discriminator}`,
-            description: `${application.server}\n\n${application.reason}\n\n${application.inviteCode}`,
+            description: `${application.server}\n\n${application.reason}`,
             timestamp:   application.insertDate,
+            fields:      [
+                {name: 'Invite: ', value: application.inviteCode, inline: true},
+                {
+                    name:   'Members: ',
+                    value:  `${invite.presenceCount} / ${invite.memberCount}`,
+                    inline: true,
+                },
+            ],
             footer:      {
                 text: `Application ID: ${application.id} | Time Left: 3 days 0 Hours 0 Minutes`,
             },

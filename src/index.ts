@@ -44,7 +44,7 @@ export default class extends AbstractPlugin {
     }
 
     @Decorator.Command('app-approve', 'Approves an application')
-    @Decorator.Permission('Owner')
+    @Decorator.Permission('application.approve')
     public async ApproveCommand(id: number): Promise<void> {
         const application = await this.getRepository<Application>(Application).findOne(id);
         if (!application) {
@@ -56,7 +56,7 @@ export default class extends AbstractPlugin {
     }
 
     @Decorator.Command('app-deny', 'Denies an application')
-    @Decorator.Permission('Owner')
+    @Decorator.Permission('application.approve')
     public async DenyCommand(id: number): Promise<void> {
         const application = await this.getRepository<Application>(Application).findOne(id);
         if (!application) {
