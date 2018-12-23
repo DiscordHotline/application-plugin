@@ -4,7 +4,6 @@ import {Container, inject, injectable} from 'inversify';
 
 import Application, {ApprovalType} from './Entity/Application';
 import ApplicationApprovalListener from './Listener/ApplicationApprovalListener';
-import ApplicationVoteListener from './Listener/ApplicationVoteListener';
 import ApplicationService from './Service/ApplicationService';
 import Types from './types';
 
@@ -23,7 +22,6 @@ export default class extends AbstractPlugin {
         container.bind<Config>(Types.application.config).toConstantValue(this.Config);
         container.bind<ApplicationApprovalListener>(Types.application.listener.approval)
                  .to(ApplicationApprovalListener);
-        container.bind<ApplicationVoteListener>(Types.application.listener.vote).to(ApplicationVoteListener);
         container.bind<ApplicationService>(Types.application.service.application).to(ApplicationService);
     }
 
@@ -34,9 +32,6 @@ export default class extends AbstractPlugin {
     @inject(Types.application.listener.approval)
     private applicationListener: ApplicationApprovalListener;
 
-    @inject(Types.application.listener.vote)
-    private voteListener: ApplicationVoteListener;
-
     @inject(Types.application.service.application)
     private appService: ApplicationService;
 
@@ -44,7 +39,6 @@ export default class extends AbstractPlugin {
         this.logger.info('Initializing ApplicationPlugin');
         await this.appService.initialize();
         await this.applicationListener.initialize();
-        await this.voteListener.initialize();
 
         return;
     }

@@ -177,7 +177,7 @@ export default class ApplicationApprovalListener {
         application.approvedDate = new Date();
         application.voteApproved = approved;
         await application.save();
-        await message.addReaction('👌');
+        await message.addReaction('☑️');
 
         const requester = await this.client.users.get(application.requestUser);
         const dm        = await requester.getDMChannel();
@@ -194,9 +194,9 @@ export default class ApplicationApprovalListener {
             title:       `New Application Request From: ${requester.username}#${requester.discriminator}`,
             description: `${application.server}\n\n${application.reason}\n\n${application.inviteCode}`,
             timestamp:   application.insertDate,
-            footer: {
-                text: 'Application ID: ' + application.id
-            }
+            footer:      {
+                text: `Application ID: ${application.id} | Time Left: 3 days 0 Hours 0 Minutes`,
+            },
         });
         const voteMessage         = await this.voteChannel.createMessage({embed: embed.serialize()});
         application.voteMessageId = voteMessage.channel.id + ':' + voteMessage.id;

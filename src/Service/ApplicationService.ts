@@ -1,7 +1,12 @@
-import {Client, TextableChannel} from 'eris';
+import {Client, Message, TextableChannel} from 'eris';
 import {types as CFTypes} from 'eris-command-framework';
 import {inject, injectable} from 'inversify';
-import Application, {ApprovalType, VoteResults} from '../Entity/Application';
+import * as millisec from 'millisec';
+import * as moment from 'moment';
+import {Connection, Repository} from 'typeorm';
+import {Logger} from 'winston';
+
+import Application, {ApprovalType, VoteResults, VoteType} from '../Entity/Application';
 import {Config} from '../index';
 import Types from '../types';
 
@@ -20,10 +25,17 @@ export default class ApplicationService {
 
     private voteChannel: TextableChannel;
 
+    private repo: Repository<Application>;
+
+    private checkInterval: NodeJS.Timeout;
+
     public constructor(
+        @inject(CFTypes.connection) connection: Connection,
         @inject(CFTypes.discordClient) private client: Client,
+        @inject(CFTypes.logger) private logger: Logger,
         @inject(Types.application.config) private config: Config,
     ) {
+        this.repo = connection.getRepository<Application>(Application);
     }
 
     public async initialize(): Promise<void> {
@@ -40,7 +52,51 @@ export default class ApplicationService {
             if (!this.voteChannel) {
                 throw new Error('Vote channel not found!');
             }
+
+            if (!this.checkInterval) {
+                this.checkInterval = setInterval(this.checkOpenApplications.bind(this), 5 * 60 * 1000);
+            }
         });
+    }
+
+    public async checkOpenApplications(): Promise<void> {
+        const applications = await this.repo.find({
+            voteApproved: ApprovalType.APPROVED,
+            votePassed:   ApprovalType.AWAITING,
+        });
+
+        await Promise.all(applications.map((application) => this.checkApplication(application)));
+    }
+
+    public async checkApplication(application: Application): Promise<void> {
+        const [channelId, messageId] = application.approvalMessageId.split(':');
+        const message                = await this.client.getMessage(channelId, messageId);
+
+        const now  = moment();
+        const date = moment(application.approvedDate);
+        const diffDays = now.diff(date, 'days');
+        let timeLeft: string;
+        if (diffDays < 0) {
+            timeLeft = 'None';
+        } else {
+            const duration = moment.duration(now.diff(date)).asMilliseconds();
+            timeLeft = millisec(duration).format('DD HH MM');
+        }
+
+        const embed = message.embeds[0];
+        embed.footer = {text: `Application ID: ${application.id} | Time Left: ${timeLeft}`};
+        await message.edit({embed});
+
+        if (diffDays < 3) {
+            return;
+        }
+
+        const votes                  = await this.getVotes(message);
+        const approved               = this.getApproval(application, votes);
+
+        if (approved !== ApprovalType.AWAITING) {
+            await this.approveOrDeny(application, approved, votes);
+        }
     }
 
     public async approveOrDeny(application: Application, approved: ApprovalType, votes?: VoteResults): Promise<void> {
@@ -87,6 +143,99 @@ https://apply.hotline.gg/${invite}
             application.votes = votes;
         }
         await application.save();
-        await message.addReaction('👌');
+
+        setTimeout(
+            () => message.addReaction('☑️'),
+            1000,
+        );
+    }
+
+    public getApproval(application: Application, votes: VoteResults): ApprovalType {
+        // If there are less than 5 approvals and 5 denies, the vote is too new.
+        if (votes.approvals < 10 && votes.denies < 2) {
+            this.logger.info(
+                'Public Vote is still awaiting for "%s" (not enough votes, A: %d, D: %d)',
+                application.server,
+                votes.approvals,
+                votes.denies,
+            );
+
+            return ApprovalType.AWAITING;
+        }
+
+        // If there are more than 2 denies, and more than 3 approvals, this is now a manual approval.
+        if (votes.approvals >= 3 && votes.denies >= 2) {
+
+            this.logger.info(
+                'Public Vote is still awaiting for "%s" (>= 2 denies, A: %d, D: %d)',
+                application.server,
+                votes.approvals,
+                votes.denies,
+            );
+
+            return ApprovalType.AWAITING;
+        }
+
+        // If there are more than 5 denies, and less than 10 approvals, deny the application
+        if (votes.denies >= 5 && votes.approvals < 10) {
+            this.logger.info(
+                'Public Vote is denied for "%s" (A: %d, D: %d)',
+                application.server,
+                votes.approvals,
+                votes.denies,
+            );
+
+            return ApprovalType.DENIED;
+        }
+
+        // If there are *more* than 10 approvals approve the vote.
+        if (votes.approvals >= 10) {
+            this.logger.info(
+                'Public Vote has passed for "%s" (A: %d, D: %d)',
+                application.server,
+                votes.approvals,
+                votes.denies,
+            );
+
+            return ApprovalType.APPROVED;
+        }
+
+        // Vote hasn't been decided yet
+
+        this.logger.info(
+            'Public vote is still awaiting for "%s" (no reason, A: %d, D: %d)',
+            application.server,
+            votes.approvals,
+            votes.denies,
+        );
+
+        return ApprovalType.AWAITING;
+    }
+
+    public async getVotes(message: Message): Promise<VoteResults> {
+        const reactions          = message.reactions;
+        const votes: VoteResults = {
+            approvals: reactions['✅'].count - (reactions['✅'].me ? 1 : 0),
+            denies:    reactions['❌'].count - (reactions['❌'].me ? 1 : 0),
+            entries:   {},
+        };
+        if (Object.keys(reactions).length === 0) {
+            return votes;
+        }
+
+        for (const name of Object.keys(reactions)) {
+            if (['✅', '❌'].indexOf(name) === -1) {
+                continue;
+            }
+
+            const users = await message.getReaction(name);
+            for (const user of users) {
+                if (!user.bot) {
+                    votes.entries[user.id] = name === '✅' ? VoteType.APPROVED : VoteType.DENIED;
+                }
+            }
+        }
+
+        return votes;
     }
 }
