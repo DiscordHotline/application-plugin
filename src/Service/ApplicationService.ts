@@ -54,7 +54,7 @@ export default class ApplicationService {
             }
 
             if (!this.checkInterval) {
-                this.checkInterval = setInterval(this.checkOpenApplications.bind(this), 1 * 60 * 1000);
+                this.checkInterval = setInterval(this.checkOpenApplications.bind(this), 15 * 60 * 1000);
                 this.checkOpenApplications();
             }
         });
