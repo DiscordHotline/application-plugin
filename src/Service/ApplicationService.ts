@@ -55,6 +55,7 @@ export default class ApplicationService {
 
             if (!this.checkInterval) {
                 this.checkInterval = setInterval(this.checkOpenApplications.bind(this), 5 * 60 * 1000);
+                this.checkOpenApplications();
             }
         });
     }
@@ -64,8 +65,9 @@ export default class ApplicationService {
             voteApproved: ApprovalType.APPROVED,
             votePassed:   ApprovalType.AWAITING,
         });
+        this.logger.info('Checking Open Applications. Found %d', applications.length);
 
-        await Promise.all(applications.map((application) => this.checkApplication(application)));
+        await Promise.all(applications.map((application) => this.checkApplication(application).catch(console.error)));
     }
 
     public async checkApplication(application: Application): Promise<void> {
