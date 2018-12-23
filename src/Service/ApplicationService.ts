@@ -55,7 +55,7 @@ export default class ApplicationService {
             // @todo Alphabetize roles after creating.
             const guild              = this.client.guilds.get(this.config.hotlineGuildId);
             const role               = await guild.createRole({
-                name:        application.server.replace(/[\W_]+/g, ''),
+                name:        application.server.replace(/[\W_\s]+/g, ''),
                 permissions: 0,
             });
             application.serverRoleId = role.id;
