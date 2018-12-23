@@ -104,9 +104,16 @@ export default class ApplicationService {
         );
 
         const embed: Embed = new Embed({
-            title:       `New Application Request From: ${requester.username}#${requester.discriminator}`,
-            description: `${application.server}\n\n${application.reason}`,
-            timestamp:   application.insertDate,
+            title:       application.server,
+            description: application.reason,
+            timestamp:   application.approvedDate,
+            author:      {
+                name:    `${requester.username}#${requester.discriminator}`,
+                iconUrl: requester.defaultAvatarURL,
+            },
+            thumbnail:   {
+                url: `https://cdn.discordapp.com/icons/${invite.guild.id}/${invite.guild.icon}.webp`,
+            },
             fields:      [
                 {name: 'Invite: ', value: application.inviteCode, inline: true},
                 {name: 'Members: ', value: `${invite.presenceCount} / ${invite.memberCount}`, inline: true},

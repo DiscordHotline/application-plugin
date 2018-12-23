@@ -195,22 +195,26 @@ export default class ApplicationApprovalListener {
 
         const invite = await this.client.getInvite(application.inviteCode.replace(/https:\/\/discord\.gg\//, ''), true);
 
-        const embed: Embed        = new Embed({
-            title:       `New Application Request From: ${requester.username}#${requester.discriminator}`,
-            description: `${application.server}\n\n${application.reason}`,
-            timestamp:   application.insertDate,
+        const embed: Embed = new Embed({
+            title:       application.server,
+            description: application.reason,
+            timestamp:   application.approvedDate,
+            author:      {
+                name:    `${requester.username}#${requester.discriminator}`,
+                iconUrl: requester.defaultAvatarURL,
+            },
+            thumbnail:   {
+                url: `https://cdn.discordapp.com/icons/${invite.guild.id}/${invite.guild.icon}.webp`,
+            },
             fields:      [
                 {name: 'Invite: ', value: application.inviteCode, inline: true},
-                {
-                    name:   'Members: ',
-                    value:  `${invite.presenceCount} / ${invite.memberCount}`,
-                    inline: true,
-                },
+                {name: 'Members: ', value: `${invite.presenceCount} / ${invite.memberCount}`, inline: true},
             ],
             footer:      {
                 text: `Application ID: ${application.id} | Time Left: 3 days 0 Hours 0 Minutes`,
             },
         });
+
         const voteMessage         = await this.voteChannel.createMessage({embed: embed.serialize()});
         application.voteMessageId = voteMessage.channel.id + ':' + voteMessage.id;
         await application.save();
