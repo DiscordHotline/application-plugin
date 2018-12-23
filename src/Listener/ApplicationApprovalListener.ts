@@ -177,7 +177,6 @@ export default class ApplicationApprovalListener {
         application.approvedDate = new Date();
         application.voteApproved = approved;
         await application.save();
-        await message.addReaction('☑️');
 
         const requester = await this.client.users.get(application.requestUser);
         const dm        = await requester.getDMChannel();
@@ -205,6 +204,8 @@ export default class ApplicationApprovalListener {
         await voteMessage.addReaction('✅');
         await sleep(500);
         await voteMessage.addReaction('❌');
+        await sleep(500);
+        await message.addReaction('☑');
 
         return true;
     }

@@ -145,7 +145,7 @@ https://apply.hotline.gg/${invite}
         await application.save();
 
         setTimeout(
-            () => message.addReaction('☑️'),
+            () => message.addReaction('☑'),
             1000,
         );
     }
