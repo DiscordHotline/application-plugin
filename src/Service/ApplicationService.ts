@@ -69,8 +69,11 @@ export default class ApplicationService {
     }
 
     public async checkApplication(application: Application): Promise<void> {
-        const [channelId, messageId] = application.approvalMessageId.split(':');
+        const [channelId, messageId] = application.voteMessageId.split(':');
         const message                = await this.client.getMessage(channelId, messageId);
+
+        await message.addReaction('✅');
+        await message.addReaction('❌');
 
         const now  = moment();
         const date = moment(application.approvedDate);
