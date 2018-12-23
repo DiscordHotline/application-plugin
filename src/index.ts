@@ -2,9 +2,10 @@ import {AbstractPlugin} from 'eris-command-framework';
 import Decorator from 'eris-command-framework/Decorator';
 import {Container, inject, injectable} from 'inversify';
 
-import Application from './Entity/Application';
+import Application, {ApprovalType} from './Entity/Application';
 import ApplicationApprovalListener from './Listener/ApplicationApprovalListener';
 import ApplicationVoteListener from './Listener/ApplicationVoteListener';
+import ApplicationService from './Service/ApplicationService';
 import Types from './types';
 
 export interface Config {
@@ -22,8 +23,8 @@ export default class extends AbstractPlugin {
         container.bind<Config>(Types.application.config).toConstantValue(this.Config);
         container.bind<ApplicationApprovalListener>(Types.application.listener.approval)
                  .to(ApplicationApprovalListener);
-        container.bind<ApplicationVoteListener>(Types.application.listener.vote)
-                 .to(ApplicationVoteListener);
+        container.bind<ApplicationVoteListener>(Types.application.listener.vote).to(ApplicationVoteListener);
+        container.bind<ApplicationService>(Types.application.service.application).to(ApplicationService);
     }
 
     public static getEntities(): any[] {
@@ -36,17 +37,39 @@ export default class extends AbstractPlugin {
     @inject(Types.application.listener.vote)
     private voteListener: ApplicationVoteListener;
 
+    @inject(Types.application.service.application)
+    private appService: ApplicationService;
+
     public async initialize(): Promise<void> {
         this.logger.info('Initializing ApplicationPlugin');
+        await this.appService.initialize();
         await this.applicationListener.initialize();
         await this.voteListener.initialize();
 
         return;
     }
 
-    @Decorator.Command('ping', 'Pings the bot!')
-    @Decorator.Permission('ping')
-    public async PingCommand(): Promise<void> {
+    @Decorator.Command('app-approve', 'Approves an application')
+    @Decorator.Permission('Owner')
+    public async ApproveCommand(id: number): Promise<void> {
+        const application = await this.getRepository<Application>(Application).findOne(id);
+        if (!application) {
+            return await this.reactNotOk();
+        }
+
+        await this.appService.approveOrDeny(application, ApprovalType.APPROVED);
+        await this.reactOk();
+    }
+
+    @Decorator.Command('app-deny', 'Denies an application')
+    @Decorator.Permission('Owner')
+    public async DenyCommand(id: number): Promise<void> {
+        const application = await this.getRepository<Application>(Application).findOne(id);
+        if (!application) {
+            return await this.reactNotOk();
+        }
+
+        await this.appService.approveOrDeny(application, ApprovalType.DENIED);
         await this.reactOk();
     }
 };

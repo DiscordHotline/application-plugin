@@ -6,6 +6,7 @@ import {Logger} from 'winston';
 
 import Application, {ApprovalType, VoteResults, VoteType} from '../Entity/Application';
 import {Config} from '../index';
+import ApplicationService from '../Service/ApplicationService';
 import Types from '../types';
 
 interface ApplicationMessage {
@@ -30,6 +31,7 @@ export default class ApplicationVoteListener {
         @inject(CFTypes.logger) private logger: Logger,
         @inject(CFTypes.discordClient) private client: Client,
         @inject(Types.application.config) private config: Config,
+        @inject(Types.application.service.application) private appService: ApplicationService,
     ) {
         this.repo = connection.getRepository(Application);
         client.on('messageCreate', this.onMessageCreate.bind(this));
@@ -234,58 +236,8 @@ export default class ApplicationVoteListener {
             return false;
         }
 
-        const requester = await this.client.users.get(application.requestUser);
-        const dm        = await requester.getDMChannel();
-        if (approved === ApprovalType.APPROVED) {
-            const invite = this.makeId(8);
-            application.hotlineInviteCode = invite;
-
-            // @todo Alphabetize roles after creating.
-            const guild              = this.client.guilds.get(this.config.hotlineGuildId);
-            const role               = await guild.createRole({
-                name:        application.server.replace(/[\W_]+/g, ''),
-                permissions: 0,
-            });
-            application.serverRoleId = role.id;
-
-            const msg = await dm.createMessage({
-                embed: {
-                    description: `Your application for ${application.server} has passed!
-
-Here is the permanent invite link for this. 
-Please pass this along to the people who want to join the server.
-If you are also a member of this server, please click the link.
-
-https://apply.hotline.gg/${invite}
-`,
-                },
-            });
-            await msg.pin();
-        } else {
-            await dm.createMessage({
-                embed: {
-                    description: `Your application for ${application.server} has been denied`,
-                },
-            });
-        }
-
-        application.passedDate = new Date();
-        application.votePassed = approved;
-        application.votes      = vote;
-        await application.save();
-        await message.addReaction('👌');
+        await this.appService.approveOrDeny(application, approved, vote);
 
         return true;
-    }
-
-    private makeId(length: number): string {
-        let text     = '';
-        let possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-
-        for (let i = 0; i < length; i++) {
-            text += possible.charAt(Math.floor(Math.random() * possible.length));
-        }
-
-        return text;
     }
 }

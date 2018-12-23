@@ -125,20 +125,22 @@ export default class ApplicationApprovalListener {
         const applications: Application[] = await this.repo.find({voteApproved: ApprovalType.AWAITING});
         for (const application of applications) {
             const [channelId, messageId] = application.approvalMessageId.split(':');
-            const message: Message       = await this.client.getMessage(channelId, messageId);
-            if (!message) {
+            try {
+                const message: Message = await this.client.getMessage(channelId, messageId);
+                if (!await this.updateApplication(message, application)) {
+                    continue;
+                }
+
+                this.messages.push({application, approvalMessage: message});
+            } catch (e) {
                 this.logger.warn(
-                    'Approval: Found an application without a message: %j',
-                    {id: message.id, content: message.content, embeds: message.embeds[0].title},
+                    'Approval - Load: Found an application without a message, denying: %j',
+                    application,
                 );
-                continue;
-            }
 
-            if (!await this.updateApplication(message, application)) {
-                continue;
+                application.voteApproved = ApprovalType.DENIED;
+                await application.save();
             }
-
-            this.messages.push({application, approvalMessage: message});
         }
     }
 
@@ -192,6 +194,9 @@ export default class ApplicationApprovalListener {
             title:       `New Application Request From: ${requester.username}#${requester.discriminator}`,
             description: `${application.server}\n\n${application.reason}\n\n${application.inviteCode}`,
             timestamp:   application.insertDate,
+            footer: {
+                text: 'Application ID: ' + application.id
+            }
         });
         const voteMessage         = await this.voteChannel.createMessage({embed: embed.serialize()});
         application.voteMessageId = voteMessage.channel.id + ':' + voteMessage.id;

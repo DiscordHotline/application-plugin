@@ -69,6 +69,6 @@ export default class Application extends BaseEntity {
     @Column({type: 'varchar', length: 16, name: 'hotline_invite_code', nullable: true})
     public hotlineInviteCode: string;
 
-    @Column({type: 'varchar', length: 16, name: 'server_role_id', nullable: true})
+    @Column({type: 'bigint', name: 'server_role_id', nullable: true})
     public serverRoleId: string;
 }
