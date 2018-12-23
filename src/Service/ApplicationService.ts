@@ -137,6 +137,9 @@ Here is the permanent invite link for this.
 Please pass this along to the people who want to join the server.
 If you are also a member of this server, please click the link.
 
+Please limit yourself to invite 5 people. If you think you need more,
+talk to the Discord Hotline Staff, and ask for permission.
+
 https://apply.hotline.gg/${invite}
 `,
                 },
