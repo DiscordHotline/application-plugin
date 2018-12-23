@@ -1,12 +1,12 @@
 import {Client, Message, TextableChannel} from 'eris';
 import {types as CFTypes} from 'eris-command-framework';
-import Embed from 'eris-command-framework/Model/Embed';
 import {inject, injectable} from 'inversify';
 import {Connection, Repository} from 'typeorm';
 import {Logger} from 'winston';
 
 import Application, {ApprovalType} from '../Entity/Application';
 import {Config} from '../index';
+import ApplicationService from '../Service/ApplicationService';
 import Types from '../types';
 
 interface ApplicationMessage {
@@ -27,6 +27,7 @@ export default class ApplicationApprovalListener {
     public constructor(
         @inject(CFTypes.connection) connection: Connection,
         @inject(CFTypes.logger) private logger: Logger,
+        @inject(Types.application.service.application) private appService: ApplicationService,
         @inject(CFTypes.discordClient) private client: Client,
         @inject(Types.application.config) private config: Config,
     ) {
@@ -193,36 +194,11 @@ export default class ApplicationApprovalListener {
 
         this.logger.info('Approval vote has been approved for "%s"', application.server);
 
-        const invite = await this.client.getInvite(application.inviteCode.replace(/https:\/\/discord\.gg\//, ''), true);
-
-        const embed: Embed = new Embed({
-            title:       application.server,
-            description: application.reason,
-            timestamp:   application.approvedDate,
-            author:      {
-                name:    `${requester.username}#${requester.discriminator}`,
-                iconUrl: requester.defaultAvatarURL,
-            },
-            thumbnail:   {
-                url: `https://cdn.discordapp.com/icons/${invite.guild.id}/${invite.guild.icon}.webp`,
-            },
-            fields:      [
-                {name: 'Invite: ', value: application.inviteCode, inline: true},
-                {name: 'Members: ', value: `${invite.presenceCount} / ${invite.memberCount}`, inline: true},
-            ],
-            footer:      {
-                text: `Application ID: ${application.id} | Time Left: 3 days 0 Hours 0 Minutes`,
-            },
-        });
-
-        const voteMessage         = await this.voteChannel.createMessage({embed: embed.serialize()});
+        const voteMessage = await this.appService.postApplicationMessage(application, false);
         application.voteMessageId = voteMessage.channel.id + ':' + voteMessage.id;
         await application.save();
+        await sleep(500);
 
-        await voteMessage.addReaction('✅');
-        await sleep(500);
-        await voteMessage.addReaction('❌');
-        await sleep(500);
         await message.addReaction('☑');
 
         return true;

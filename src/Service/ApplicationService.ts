@@ -1,4 +1,4 @@
-import {Client, Message, TextableChannel} from 'eris';
+import {Client, Invite, Message, TextableChannel} from 'eris';
 import {types as CFTypes} from 'eris-command-framework';
 import Embed from 'eris-command-framework/Model/Embed';
 import {inject, injectable} from 'inversify';
@@ -61,33 +61,13 @@ export default class ApplicationService {
         });
     }
 
-    public async checkOpenApplications(): Promise<void> {
-        const applications = await this.repo.find({
-            voteApproved: ApprovalType.APPROVED,
-            votePassed:   ApprovalType.AWAITING,
-        });
-        this.logger.info('Checking Open Applications. Found %d', applications.length);
-        for (const application of applications) {
-            try {
-                await this.checkApplication(application);
-            } catch (e) {
-                this.logger.error(e);
-            }
-        }
-    }
-
-    public async checkApplication(application: Application): Promise<void> {
-        const [channelId, messageId] = application.voteMessageId.split(':');
-        const message                = await this.client.getMessage(channelId, messageId);
-
-        try {
-            await message.addReaction('✅');
-            await message.addReaction('❌');
-        } catch (ignored) {
+    public async postApplicationMessage(application: Application, edit: boolean): Promise<Message> {
+        if (!edit) {
+            throw new Error('Creating for some reason');
         }
 
         const now      = moment();
-        const date     = moment(application.approvedDate);
+        const date     = moment(application.insertDate);
         const diffDays = now.diff(date, 'days');
         let timeLeft: string;
         if (diffDays < 0) {
@@ -98,10 +78,17 @@ export default class ApplicationService {
         }
 
         const requester = await this.client.users.get(application.requestUser);
-        const invite    = await this.client.getInvite(
-            application.inviteCode.replace(/https:\/\/discord\.gg\//, ''),
-            true,
-        );
+        let invite: Invite;
+        try {
+            invite = await this.client.getInvite(
+                application.inviteCode.replace(/https:\/\/discord\.gg\//, ''),
+                true,
+            );
+        } catch (e) {
+            this.logger.error('Failed to find invite for application: %j', application);
+
+            throw e;
+        }
 
         const embed: Embed = new Embed({
             title:       application.server,
@@ -122,8 +109,55 @@ export default class ApplicationService {
                 text: `Application ID: ${application.id} | Time Left: ${timeLeft}`,
             },
         });
-        await message.edit({embed: embed.serialize()});
 
+        if (!edit) {
+            const message = await this.client.createMessage(this.config.voteChannel, {embed: embed.serialize()});
+            await message.addReaction('✅');
+            await message.addReaction('❌');
+
+            return message;
+        }
+
+        try {
+            const [channelId, messageId] = application.voteMessageId.split(':');
+            const message                = await this.client.getMessage(channelId, messageId);
+
+            await message.edit({embed: embed.serialize()});
+            await message.addReaction('✅');
+            await message.addReaction('❌');
+
+            return message;
+        } catch (e) {
+            this.logger.error(e);
+
+            return this.postApplicationMessage(application, false);
+        }
+    }
+
+    public async checkOpenApplications(): Promise<void> {
+        const applications = await this.repo.find({
+            voteApproved: ApprovalType.APPROVED,
+            votePassed:   ApprovalType.AWAITING,
+        });
+        this.logger.info('Checking Open Applications. Found %d', applications.length);
+        for (const application of applications) {
+            try {
+                await this.checkApplication(application);
+            } catch (e) {
+                this.logger.error(e);
+            }
+        }
+    }
+
+    public async checkApplication(application: Application): Promise<void> {
+        const [channelId, messageId] = application.voteMessageId.split(':');
+        const message                = await this.client.getMessage(channelId, messageId);
+
+        await this.postApplicationMessage(application, true);
+
+        const now      = moment();
+        const date     = moment(application.insertDate);
+        const diffDays = now.diff(date, 'days');
         if (diffDays < 3) {
             return;
         }
@@ -252,7 +286,7 @@ https://apply.hotline.gg/${invite}
         return ApprovalType.AWAITING;
     }
 
-    public async getVotes(message: Message): Promise<VoteResults> {
+    public async getVotes(message: Message, deleteReaction: boolean = false): Promise<VoteResults> {
         const reactions          = message.reactions;
         const votes: VoteResults = {
             approvals: reactions['✅'].count - (reactions['✅'].me ? 1 : 0),
@@ -272,6 +306,10 @@ https://apply.hotline.gg/${invite}
             for (const user of users) {
                 if (!user.bot) {
                     votes.entries[user.id] = name === '✅' ? VoteType.APPROVED : VoteType.DENIED;
+                    if (deleteReaction) {
+                        await message.removeReaction(name, user.id);
+                        await sleep(500);
+                    }
                 }
             }
         }
@@ -279,3 +317,5 @@ https://apply.hotline.gg/${invite}
         return votes;
     }
 }
+
+const sleep = async (ms) => new Promise((resolve) => setTimeout(resolve, ms));
