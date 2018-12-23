@@ -54,7 +54,7 @@ export default class ApplicationService {
             }
 
             if (!this.checkInterval) {
-                this.checkInterval = setInterval(this.checkOpenApplications.bind(this), 5 * 60 * 1000);
+                this.checkInterval = setInterval(this.checkOpenApplications.bind(this), 1 * 60 * 1000);
                 this.checkOpenApplications();
             }
         });
@@ -66,8 +66,13 @@ export default class ApplicationService {
             votePassed:   ApprovalType.AWAITING,
         });
         this.logger.info('Checking Open Applications. Found %d', applications.length);
-
-        await Promise.all(applications.map((application) => this.checkApplication(application).catch(console.error)));
+        for (const application of applications) {
+            try {
+                await this.checkApplication(application);
+            } catch (e) {
+                this.logger.error(e);
+            }
+        }
     }
 
     public async checkApplication(application: Application): Promise<void> {
@@ -87,7 +92,7 @@ export default class ApplicationService {
         if (diffDays < 0) {
             timeLeft = 'None';
         } else {
-            const duration = moment.duration(now.diff(date)).asMilliseconds();
+            const duration = moment.duration(date.add(3, 'd').diff(now)).asMilliseconds();
             timeLeft = millisec(duration).format('DD HH MM');
         }
 
