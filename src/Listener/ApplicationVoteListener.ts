@@ -72,7 +72,7 @@ export default class ApplicationVoteListener {
     private async loadMessages(): Promise<void> {
         this.logger.info('Loading application vote messages!');
 
-        const applications: Application[] = await this.repo.find(/*{votePassed: ApprovalType.AWAITING}*/);
+        const applications: Application[] = await this.repo.find();
         for (const application of applications) {
             try {
                 const [channelId, messageId] = application.voteMessageId.split(':');
@@ -118,7 +118,7 @@ export default class ApplicationVoteListener {
 
         application.votes = votes;
         
-        if (application.votePassed === ApprovalType.AWAITING) {
+        if (votePassed === ApprovalType.AWAITING) {
             await application.save();
         } else if (!reactions['👌']) {
             this.logger.warn(
@@ -128,7 +128,7 @@ export default class ApplicationVoteListener {
 
             await message.removeReactions();
             await message.addReaction('👌');
-            await message.addReaction(application.votePassed === ApprovalType.APPROVED ? '✅' : '❌');
+            await message.addReaction(votePassed === ApprovalType.APPROVED ? '✅' : '❌');
         }
     }
 }
