@@ -60,7 +60,7 @@ export default class ApplicationApprovalListener {
     }
 
     private async onMessageCreate(approvalMessage: Message): Promise<void> {
-        if (approvalMessage.channel.id !== this.approvalChannel.id) {
+        if (!approvalMessage.channel || approvalMessage.channel.id !== this.approvalChannel.id) {
             return;
         }
         setTimeout(
@@ -69,7 +69,7 @@ export default class ApplicationApprovalListener {
                 const application       = await this.repo.findOne({approvalMessageId});
                 if (!application) {
                     this.logger.warn(
-                        'Approval - Message Create: Found a message without an application: %j',
+                        'Approval - message Create: Found a message without an application: %j',
                         {
                             id:      approvalMessage.id,
                             content: approvalMessage.content,
@@ -92,7 +92,7 @@ export default class ApplicationApprovalListener {
         userId: string,
     ): Promise<void> {
         approvalMessage = await this.client.getMessage(approvalMessage.channel.id, approvalMessage.id);
-        if (approvalMessage.channel.id !== this.config.approvalChannel) {
+        if (!approvalMessage.channel || approvalMessage.channel.id !== this.config.approvalChannel) {
             return;
         }
 

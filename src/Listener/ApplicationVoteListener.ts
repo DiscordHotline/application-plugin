@@ -46,7 +46,7 @@ export default class ApplicationVoteListener {
         userId: string,
     ): Promise<void> {
         voteMessage = await this.client.getMessage(voteMessage.channel.id, voteMessage.id);
-        if (voteMessage.channel.id !== this.voteChannel.id) {
+        if (!voteMessage.channel || voteMessage.channel.id !== this.voteChannel.id) {
             return;
         }
 
@@ -74,9 +74,13 @@ export default class ApplicationVoteListener {
 
         const applications: Application[] = await this.repo.find({votePassed: ApprovalType.AWAITING});
         for (const application of applications) {
-            const [channelId, messageId] = application.voteMessageId.split(':');
             try {
+                const [channelId, messageId] = application.voteMessageId.split(':');
                 const message: Message = await this.client.getMessage(channelId, messageId);
+                if (null === message) {
+                    throw new Error('Message not found');
+                }
+
                 await this.updateApplication(message, application);
             } catch (e) {
                 this.logger.warn(

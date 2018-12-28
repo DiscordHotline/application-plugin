@@ -32,6 +32,8 @@ export default class extends AbstractPlugin {
         return [Application];
     }
 
+    x;
+
     @inject(Types.application.listener.approval)
     private applicationListener: ApplicationApprovalListener;
 
@@ -50,7 +52,7 @@ export default class extends AbstractPlugin {
         return;
     }
 
-    @Decorator.Command('app-approve', 'Approves an application')
+    @Decorator.Command('app approve', 'Approves an application')
     @Decorator.Permission('application.approve')
     public async ApproveCommand(id: number): Promise<void> {
         const application = await this.getRepository<Application>(Application).findOne(id);
@@ -62,7 +64,7 @@ export default class extends AbstractPlugin {
         await this.reactOk();
     }
 
-    @Decorator.Command('app-deny', 'Denies an application')
+    @Decorator.Command('app deny', 'Denies an application')
     @Decorator.Permission('application.approve')
     public async DenyCommand(id: number): Promise<void> {
         const application = await this.getRepository<Application>(Application).findOne(id);
@@ -74,7 +76,7 @@ export default class extends AbstractPlugin {
         await this.reactOk();
     }
 
-    @Decorator.Command('app-view', 'Views an application')
+    @Decorator.Command('app view', 'Views an application')
     @Decorator.Permission('application.view')
     public async ViewCommand(id: number): Promise<void> {
         const application = await this.getRepository<Application>(Application).findOne(id);
@@ -82,21 +84,28 @@ export default class extends AbstractPlugin {
             return await this.reactNotOk();
         }
 
-        const fields = [];
+        const fields  = [];
+        let approvals = 0;
+        let denies    = 0;
         for (const userId of Object.keys(application.votes.entries)) {
             const user = this.client.users.get(userId);
             const vote = application.votes.entries[userId];
+            approvals += vote === VoteType.APPROVED ? 1 : 0;
+            denies += vote === VoteType.DENIED ? 1 : 0;
 
             fields.push({
                 name:   user.username + '#' + user.discriminator,
-                value:  vote === VoteType.APPROVED ? 'Approve' : 'Deny',
+                value:  vote === VoteType.APPROVED ? '✅' : '❌',
                 inline: true,
             });
         }
 
         await this.embedMessage((x) => {
-            x.title = 'Vote Results for: ' + application.server;
+            x.author  = {
+                name: 'Vote Results for: ' + application.server,
+            };
             x.fields = fields;
+            x.title = `Current Results: ${approvals} - ${denies}`;
         });
     }
 };

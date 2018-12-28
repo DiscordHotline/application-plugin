@@ -1,6 +1,6 @@
 {
     "name": "@hotline/application-plugin",
-    "pluginTitle": "Core",
+    "pluginTitle": "Application",
     "description": "Application Plugin for the Hotline Bot",
     "main": "index.js",
     "types": "index.d.ts",
@@ -21,7 +21,7 @@
     },
     "peerDependencies": {
         "eris": "^0.9",
-        "eris-command-framework": "^2.0"
+        "eris-command-framework": "^2.1"
     },
     "dependencies": {
         "millisec": "^0.2.0"

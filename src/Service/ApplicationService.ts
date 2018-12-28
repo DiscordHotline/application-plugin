@@ -62,19 +62,14 @@ export default class ApplicationService {
     }
 
     public async postApplicationMessage(application: Application, edit: boolean): Promise<Message> {
-        if (!edit) {
-            throw new Error('Creating for some reason');
-        }
-
-        const now      = moment();
-        const date     = moment(application.insertDate);
-        const diffDays = now.diff(date, 'days');
+        const now  = moment();
+        const date = moment(application.insertDate);
+        const diff = moment.duration(date.add(3, 'd').diff(now)).asMilliseconds();
         let timeLeft: string;
-        if (diffDays < 0) {
+        if (diff < 0) {
             timeLeft = 'None';
         } else {
-            const duration = moment.duration(date.add(3, 'd').diff(now)).asMilliseconds();
-            timeLeft       = millisec(duration).format('DD HH MM');
+            timeLeft = millisec(diff < 0 ? 0 : diff).format('DD HH MM');
         }
 
         const requester = await this.client.users.get(application.requestUser);
@@ -150,27 +145,27 @@ export default class ApplicationService {
     }
 
     public async checkApplication(application: Application): Promise<void> {
-        const [channelId, messageId] = application.voteMessageId.split(':');
-        const message                = await this.client.getMessage(channelId, messageId);
-
         await this.postApplicationMessage(application, true);
 
-        const now      = moment();
-        const date     = moment(application.insertDate);
-        const diffDays = now.diff(date, 'days');
-        if (diffDays < 3) {
+        const now  = moment();
+        const date = moment(application.insertDate);
+        const diff = moment.duration(date.add(3, 'd').diff(now)).asHours();
+        if (diff > 0) {
+            this.logger.info('Application "%s" has %d more hours.', application.server, diff);
+
             return;
         }
 
-        const votes    = await this.getVotes(message);
-        const approved = this.getApproval(application, votes);
+        this.setVoteCounts(application);
+        const approved = this.getApproval(application);
 
         if (approved !== ApprovalType.AWAITING) {
-            await this.approveOrDeny(application, approved, votes);
+            await this.approveOrDeny(application, approved);
         }
     }
 
-    public async approveOrDeny(application: Application, approved: ApprovalType, votes?: VoteResults): Promise<void> {
+    public async approveOrDeny(application: Application, approved: ApprovalType): Promise<void> {
+        const votes                  = application.votes;
         const [channelId, messageId] = application.approvalMessageId.split(':');
         const message                = await this.client.getMessage(channelId, messageId);
         const requester              = await this.client.users.get(application.requestUser);
@@ -224,7 +219,9 @@ https://apply.hotline.gg/${invite}
         );
     }
 
-    public getApproval(application: Application, votes: VoteResults): ApprovalType {
+    public getApproval(application: Application): ApprovalType {
+        const votes = application.votes;
+
         // If there are less than 5 approvals and 5 denies, the vote is too new.
         if (votes.approvals < 10 && votes.denies < 2) {
             this.logger.info(
@@ -235,6 +232,19 @@ https://apply.hotline.gg/${invite}
             );
 
             return ApprovalType.AWAITING;
+        }
+
+        // If there are more than 3x more denies than approvals and at least 10 votes, automatically deny.
+        if (votes.approvals + votes.denies > 10 && votes.denies >= votes.approvals * 3) {
+
+            this.logger.info(
+                'Public Vote is denied for "%s" (>= 3x denies, A: %d, D: %d)',
+                application.server,
+                votes.approvals,
+                votes.denies,
+            );
+
+            return ApprovalType.DENIED;
         }
 
         // If there are more than 2 denies, and more than 3 approvals, this is now a manual approval.
@@ -306,6 +316,7 @@ https://apply.hotline.gg/${invite}
             for (const user of users) {
                 if (!user.bot) {
                     votes.entries[user.id] = name === '✅' ? VoteType.APPROVED : VoteType.DENIED;
+                    this.logger.info('Vote added for %s', user.id);
                     if (deleteReaction) {
                         await message.removeReaction(name, user.id);
                         await sleep(500);
@@ -315,6 +326,18 @@ https://apply.hotline.gg/${invite}
         }
 
         return votes;
+    }
+
+    private setVoteCounts(application: Application): void {
+        for (const user of Object.keys(application.votes.entries)) {
+            const entry = application.votes.entries[user];
+
+            if (entry === VoteType.APPROVED) {
+                application.votes.approvals++;
+            } else {
+                application.votes.denies++;
+            }
+        }
     }
 }
 
