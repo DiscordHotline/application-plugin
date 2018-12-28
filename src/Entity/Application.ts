@@ -33,6 +33,9 @@ export default class Application extends BaseEntity {
     @Column({type: 'varchar', name: 'server', length: 255})
     public server: string;
 
+    @Column({type: 'bigint', name: 'server_id', nullable: true})
+    public serverId: string;
+
     @Column({type: 'text', name: 'reason'})
     public reason: string;
 
@@ -54,7 +57,7 @@ export default class Application extends BaseEntity {
     @Column({type: 'datetime', name: 'insert_date'})
     public insertDate: Date;
 
-    @Column({type: 'datetime', name: 'approved_date'})
+    @Column({type: 'datetime', name: 'approved_date', nullable: true})
     public approvedDate: Date;
 
     @Column({type: 'datetime', name: 'passed_date', nullable: true})
