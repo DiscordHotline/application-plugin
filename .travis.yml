@@ -4,12 +4,22 @@ node_js:
     - "10"
 
 sudo: false
+if: tag IS blank
 
 install:
-    - npm i -g semantic-release@15 @semantic-release/npm npm-install-peers
     - npm i
     - npm-install-peers
 
 script:
     - npm run build
+
+after_success:
+    - npm i -g semantic-release@15 @semantic-release/npm
     - npx semantic-release -e @semantic-release/npm
+    - wget https://raw.githubusercontent.com/DiscordHooks/travis-ci-discord-webhook/master/send.sh
+    - chmod +x send.sh
+    - ./send.sh success $WEBHOOK_URL
+after_failure:
+    - wget https://raw.githubusercontent.com/DiscordHooks/travis-ci-discord-webhook/master/send.sh
+    - chmod +x send.sh
+    - ./send.sh failure $WEBHOOK_URL
