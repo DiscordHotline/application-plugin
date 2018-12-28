@@ -330,6 +330,19 @@ https://apply.hotline.gg/${invite}
         return votes;
     }
 
+    public countVotes(application: Application): VoteResults {
+        for (const user of Object.keys(application.votes.entries)) {
+            const entry = application.votes.entries[user];
+
+            if (entry === VoteType.APPROVED) {
+                application.votes.approvals++;
+            } else {
+                application.votes.denies++;
+            }
+        }
+        return application.votes;
+    }
+
     private setVoteCounts(application: Application): void {
         for (const user of Object.keys(application.votes.entries)) {
             const entry = application.votes.entries[user];
