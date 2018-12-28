@@ -122,7 +122,7 @@ export default class ApplicationVoteListener {
             await application.save();
 
             const embed        = message.embeds[0];
-            const currentVotes = await this.appService.getVotes(message);
+            const currentVotes = this.appService.countVotes(application);
 
             if (!embed.fields[2]) {
                 embed.fields[2] = { name: 'Approvals', inline: true}
