@@ -72,7 +72,7 @@ export default class ApplicationVoteListener {
     private async loadMessages(): Promise<void> {
         this.logger.info('Loading application vote messages!');
 
-        const applications: Application[] = await this.repo.find({votePassed: ApprovalType.AWAITING});
+        const applications: Application[] = await this.repo.find(/*{votePassed: ApprovalType.AWAITING}*/);
         for (const application of applications) {
             try {
                 const [channelId, messageId] = application.voteMessageId.split(':');
@@ -99,8 +99,11 @@ export default class ApplicationVoteListener {
         message: Message,
         application: Application,
     ): Promise<void> {
-        const reactions = message.reactions;
-        if (Object.keys(reactions).length === 0) {
+        const reactions      = message.reactions;
+        const { votePassed } = application;
+        const reactionKeys   = Object.keys(reactions);
+
+        if (reactionKeys.length === 0 && votePassed === ApprovalType.AWAITING) {
             try {
                 await message.addReaction('✅');
                 await message.addReaction('❌');
@@ -114,6 +117,18 @@ export default class ApplicationVoteListener {
         votes.denies    = 0;
 
         application.votes = votes;
-        await application.save();
+        
+        if (application.votePassed === ApprovalType.AWAITING) {
+            await application.save();
+        } else if (!reactions['👌']) {
+            this.logger.warn(
+                'Vote - Load: Found an expired application without result reactions, adding them: %j',
+                application,
+            );
+
+            await message.removeReactions();
+            await message.addReaction('👌');
+            await message.addReaction(application.votePassed === ApprovalType.APPROVED ? '✅' : '❌');
+        }
     }
 }
