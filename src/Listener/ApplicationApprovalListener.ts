@@ -60,7 +60,7 @@ export default class ApplicationApprovalListener {
     }
 
     private async onMessageCreate(approvalMessage: Message): Promise<void> {
-        if (!approvalMessage.channel || approvalMessage.channel.id !== this.approvalChannel.id) {
+        if (!approvalMessage.channel || !this.approvalChannel || approvalMessage.channel.id !== this.approvalChannel.id) {
             return;
         }
         setTimeout(
