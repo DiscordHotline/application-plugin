@@ -120,6 +120,18 @@ export default class ApplicationVoteListener {
         
         if (votePassed === ApprovalType.AWAITING) {
             await application.save();
+
+            const embed        = message.embeds[0];
+            const currentVotes = await this.appService.getVotes(message);
+
+            embed.fields[2].value = currentVotes.approvals.toString();
+            embed.fields[3].value = currentVotes.denies.toString()
+
+            try {
+                await message.edit({embed});
+            } catch (e) {
+                this.logger.error(e);
+            }
         } else if (!reactions['👌']) {
             this.logger.warn(
                 'Vote - Load: Found an expired application without result reactions, adding them: %j',
