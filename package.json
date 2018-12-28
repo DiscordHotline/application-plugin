@@ -12,6 +12,7 @@
     "license": "MIT",
     "devDependencies": {
         "@types/node": "^10.12.18",
+        "npm-install-peers": "^1.2.1",
         "reflect-metadata": "^0.1.12",
         "ts-lint": "^4.5.1",
         "typescript": "^3.2.2"
