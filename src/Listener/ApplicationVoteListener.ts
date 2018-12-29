@@ -128,7 +128,7 @@ export default class ApplicationVoteListener {
                 embed.fields[2] = { name: 'Votes', inline: true}
             }
 
-            embed.fields[2].value = currentVotes.entries.length.toString();
+            embed.fields[2].value = Object.keys(currentVotes.entries).length.toString();
 
             try {
                 await message.edit({embed});
