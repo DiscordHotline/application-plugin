@@ -356,6 +356,9 @@ https://apply.hotline.gg/${invite}
     }
 
     private setVoteCounts(application: Application): void {
+        application.votes.approvals = 0;
+        application.votes.denies    = 0;
+
         for (const user of Object.keys(application.votes.entries)) {
             const entry = application.votes.entries[user];
 
@@ -369,7 +372,7 @@ https://apply.hotline.gg/${invite}
 
     // TODO: Remove this method after restClient has been added to eris-command-framework
     public async getUser(userId: string): Promise<restUser> {
-        let { data } = await Axios.get(`https://discordapp.com/api/users/${userId}`, {
+        const { data } = await Axios.get(`https://discordapp.com/api/users/${userId}`, {
             headers: {
                 Authorization: this.client.token
             },
