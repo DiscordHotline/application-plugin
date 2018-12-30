@@ -133,6 +133,7 @@ export default class ApplicationService {
     public async getApplication(applicationId): Promise<Application> {
         return this.repo.findOne({id: applicationId})
     }
+
     public async checkOpenApplications(): Promise<void> {
         const applications = await this.repo.find({
             voteApproved: ApprovalType.APPROVED,
@@ -332,7 +333,11 @@ https://apply.hotline.gg/${invite}
         return votes;
     }
 
-    public countVotes(application: Application): VoteResults {
+    public async countVotes(application: Application): Promise<VoteResults> {
+        if (!application.votes) {
+            application = await this.getApplication(application.id)
+        }
+
         for (const user of Object.keys(application.votes.entries)) {
             const entry = application.votes.entries[user];
 
