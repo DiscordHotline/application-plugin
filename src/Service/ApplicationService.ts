@@ -72,7 +72,7 @@ export default class ApplicationService {
             timeLeft = millisec(diff < 0 ? 0 : diff).format('DD HH MM');
         }
 
-        const requester = await this.client.users.get(application.requestUser);
+        const requester = await this.client.getRESTUser(application.requestUser);
         let invite: Invite;
         try {
             invite = await this.client.getInvite(
