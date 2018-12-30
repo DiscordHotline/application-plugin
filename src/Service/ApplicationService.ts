@@ -130,6 +130,9 @@ export default class ApplicationService {
         }
     }
 
+    public async getApplication(applicationId): Promise<Application> {
+        return this.repo.findOne({id: applicationId})
+    }
     public async checkOpenApplications(): Promise<void> {
         const applications = await this.repo.find({
             voteApproved: ApprovalType.APPROVED,
