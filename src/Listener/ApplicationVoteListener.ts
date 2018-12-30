@@ -74,6 +74,10 @@ export default class ApplicationVoteListener {
 
         const applications: Application[] = await this.repo.find();
         for (const application of applications) {
+            if (application.voteApproved === ApprovalType.AWAITING) {
+                continue
+            }
+            
             try {
                 const [channelId, messageId] = application.voteMessageId.split(':');
                 const message: Message = await this.client.getMessage(channelId, messageId);
