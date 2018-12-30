@@ -25,6 +25,7 @@
         "eris-command-framework": "^2.1"
     },
     "dependencies": {
+        "axios": "^0.18.0",
         "millisec": "^0.2.0"
     }
 }
