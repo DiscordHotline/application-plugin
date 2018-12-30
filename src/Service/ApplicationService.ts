@@ -4,13 +4,12 @@ import Embed from 'eris-command-framework/Model/Embed';
 import {inject, injectable} from 'inversify';
 import * as millisec from 'millisec';
 import * as moment from 'moment';
-import Axios from 'axios';
 import {Connection, Repository} from 'typeorm';
 import {Logger} from 'winston';
 
 import Application, {ApprovalType, VoteResults, VoteType} from '../Entity/Application';
 import {Config} from '../index';
-import Types, { restUser } from '../types';
+import Types from '../types';
 
 @injectable()
 export default class ApplicationService {
@@ -32,10 +31,11 @@ export default class ApplicationService {
     private checkInterval: NodeJS.Timeout;
 
     public constructor(
-        @inject(CFTypes.connection) connection: Connection,
-        @inject(CFTypes.discordClient) private client: Client,
-        @inject(CFTypes.logger) private logger: Logger,
-        @inject(Types.application.config) private config: Config,
+        @inject(CFTypes.connection) connection               : Connection,
+        @inject(CFTypes.discordClient) private client        : Client,
+        @inject(CFTypes.logger) private logger               : Logger,
+        @inject(Types.application.config) private config     : Config,
+        @inject(CFTypes.discordRestClient) private restClient: Client
     ) {
         this.repo = connection.getRepository<Application>(Application);
     }
@@ -73,7 +73,7 @@ export default class ApplicationService {
             timeLeft = millisec(diff < 0 ? 0 : diff).format('DD HH MM');
         }
 
-        const requester = await this.getUser(application.requestUser);
+        const requester = await this.restClient.getRESTUser(application.requestUser);
         let invite: Invite;
         try {
             invite = await this.client.getInvite(
@@ -373,18 +373,6 @@ https://apply.hotline.gg/${invite}
                 application.votes.denies++;
             }
         }
-    }
-
-    // TODO: Remove this method after restClient has been added to eris-command-framework
-    public async getUser(userId: string): Promise<restUser> {
-        const { data } = await Axios.get(`https://discordapp.com/api/users/${userId}`, {
-            headers: {
-                Authorization: this.client.token
-            },
-            validateStatus: (statusCode) => statusCode === 200
-        })
-
-        return data
     }
 }
 

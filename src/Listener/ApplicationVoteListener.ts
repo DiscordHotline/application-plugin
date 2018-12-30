@@ -77,7 +77,7 @@ export default class ApplicationVoteListener {
             if (application.voteApproved === ApprovalType.AWAITING) {
                 continue
             }
-            
+
             try {
                 const [channelId, messageId] = application.voteMessageId.split(':');
                 const message: Message = await this.client.getMessage(channelId, messageId);
@@ -107,7 +107,6 @@ export default class ApplicationVoteListener {
         const { votePassed } = application;
         const reactionKeys   = Object.keys(reactions);
         const passEmote      = votePassed === ApprovalType.APPROVED ? '✅' : '❌'
-
         
         if (votePassed === ApprovalType.AWAITING) {
             if (reactionKeys.length === 0) {
