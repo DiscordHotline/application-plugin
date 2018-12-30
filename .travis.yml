@@ -6,16 +6,16 @@ node_js:
 sudo: false
 if: tag IS blank
 
+branches:
+    only:
+        - master
+
 install:
     - npm i
     - npm-install-peers
 
 script:
     - npm run build
-
-branches:
-    only:
-        - master
 
 after_success:
     - npm i -g semantic-release@15 @semantic-release/npm
