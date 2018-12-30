@@ -221,10 +221,10 @@ https://apply.hotline.gg/${invite}
         }
         await application.save();
 
-        setTimeout(
-            () => message.addReaction('☑'),
-            1000,
-        );
+        await sleep(1000)
+        await message.removeReactions()
+        await message.addReaction(approved === ApprovalType.APPROVED ? '✅' : '❌')
+        await message.addReaction('👌')
     }
 
     public getApproval(application: Application): ApprovalType {
