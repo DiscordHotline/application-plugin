@@ -4,12 +4,13 @@ import Embed from 'eris-command-framework/Model/Embed';
 import {inject, injectable} from 'inversify';
 import * as millisec from 'millisec';
 import * as moment from 'moment';
+import Axios from 'axios';
 import {Connection, Repository} from 'typeorm';
 import {Logger} from 'winston';
 
 import Application, {ApprovalType, VoteResults, VoteType} from '../Entity/Application';
 import {Config} from '../index';
-import Types from '../types';
+import Types, { restUser } from '../types';
 
 @injectable()
 export default class ApplicationService {
@@ -72,7 +73,7 @@ export default class ApplicationService {
             timeLeft = millisec(diff < 0 ? 0 : diff).format('DD HH MM');
         }
 
-        const requester = await this.client.getRESTUser(application.requestUser);
+        const requester = await this.getUser(application.requestUser);
         let invite: Invite;
         try {
             invite = await this.client.getInvite(
@@ -93,7 +94,7 @@ export default class ApplicationService {
             timestamp:   application.approvedDate,
             author:      {
                 name:    `${requester.username}#${requester.discriminator}`,
-                iconUrl: requester.dynamicAvatarURL(),
+                iconUrl: `https://cdn.discordapp.com/avatars/${requester.id}/${requester.avatar}.png`,
             },
             thumbnail:   {
                 url: `https://cdn.discordapp.com/icons/${invite.guild.id}/${invite.guild.icon}.webp`,
@@ -364,6 +365,18 @@ https://apply.hotline.gg/${invite}
                 application.votes.denies++;
             }
         }
+    }
+
+    // TODO: Remove this method after restClient has been added to eris-command-framework
+    public async getUser(userId: string): Promise<restUser> {
+        let { data } = await Axios.get(`https://discordapp.com/api/users/${userId}`, {
+            headers: {
+                Authorization: this.client.token
+            },
+            validateStatus: (statusCode) => statusCode === 200
+        })
+
+        return data
     }
 }
 
