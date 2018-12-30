@@ -99,7 +99,7 @@ export default class ApplicationService {
             fields:      [
                 {name: 'Invite: ', value: application.inviteCode, inline: true},
                 {name: 'Members: ', value: `${invite.presenceCount} / ${invite.memberCount}`, inline: true},
-                {name: 'Votes', value: '0', inline: true},
+                {name: 'Votes', value: application.votes.entries.length.toString(), inline: true},
             ],
             footer:      {
                 text: `Application ID: ${application.id} | Time Left: ${timeLeft}`,
