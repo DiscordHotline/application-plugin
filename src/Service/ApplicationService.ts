@@ -224,9 +224,10 @@ https://apply.hotline.gg/${invite}
         const approvalMessage                        = await this.client.getMessage(approvalChannelId, approvalMessageId);
         const [voteChannelId, voteMessageId]         = application.voteMessageId.split(':')
         const voteMessage                            = await this.client.getMessage(voteChannelId, voteMessageId);
+        const passEmote                              = approved === ApprovalType.APPROVED ? '✅' : '❌'
 
         await voteMessage.removeReactions()
-        await voteMessage.addReaction(approved === ApprovalType.APPROVED ? '✅' : '❌')
+        await voteMessage.addReaction(passEmote)
         await voteMessage.addReaction('👌')
         await approvalMessage.addReaction('👌')
     }
