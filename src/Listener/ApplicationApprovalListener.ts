@@ -183,11 +183,18 @@ export default class ApplicationApprovalListener {
         application.voteApproved = approved;
         await application.save();
 
-        const requester = await this.client.users.get(application.requestUser);
-        const dm        = await requester.getDMChannel();
+        
         if (approved === ApprovalType.DENIED) {
             this.logger.info('Approval vote has been denied for "%s"', application.server);
-            await dm.createMessage({content: `Your application for ${application.server} has been denied`});
+
+            // Attempt notifying the requestee that their application has been denied
+            try {
+                const requester = await this.client.users.get(application.requestUser);
+                const dm        = await requester.getDMChannel();
+                await dm.createMessage({content: `Your application for ${application.server} has been denied`});
+            } catch (err) {
+                this.logger.warn('Failed to send a notification to the requestee that their application got denied: %j', err)
+            }
 
             return true;
         }
