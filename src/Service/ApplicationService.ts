@@ -85,6 +85,8 @@ export default class ApplicationService {
             throw e;
         }
 
+        const votes = await this.countVotes(application)
+
         const embed: Embed = new Embed({
             title:       application.server,
             description: application.reason,
@@ -99,7 +101,7 @@ export default class ApplicationService {
             fields:      [
                 {name: 'Invite: ', value: application.inviteCode, inline: true},
                 {name: 'Members: ', value: `${invite.presenceCount} / ${invite.memberCount}`, inline: true},
-                {name: 'Votes', value: application.votes.entries.length.toString(), inline: true},
+                {name: 'Votes', value: votes.entries.length.toString(), inline: true},
             ],
             footer:      {
                 text: `Application ID: ${application.id} | Time Left: ${timeLeft}`,
