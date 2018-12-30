@@ -101,7 +101,7 @@ export default class ApplicationService {
             fields:      [
                 {name: 'Invite: ', value: application.inviteCode, inline: true},
                 {name: 'Members: ', value: `${invite.presenceCount} / ${invite.memberCount}`, inline: true},
-                {name: 'Votes', value: Object.keys(votes.entries).length.toString(), inline: true},
+                {name: 'Votes', value: votes.entries ? Object.keys(votes.entries).length.toString() : '0', inline: true},
             ],
             footer:      {
                 text: `Application ID: ${application.id} | Time Left: ${timeLeft}`,
@@ -338,6 +338,8 @@ https://apply.hotline.gg/${invite}
     public async countVotes(application: Application): Promise<VoteResults> {
         if (!application.votes) {
             application = await this.getApplication(application.id)
+        } if (!application.votes.entries) {
+            return application.votes
         }
 
         for (const user of Object.keys(application.votes.entries)) {
