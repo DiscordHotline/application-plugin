@@ -13,6 +13,10 @@ install:
 script:
     - npm run build
 
+branches:
+    only:
+        - master
+
 after_success:
     - npm i -g semantic-release@15 @semantic-release/npm
     - npx semantic-release -e @semantic-release/npm
