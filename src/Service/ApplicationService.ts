@@ -174,8 +174,6 @@ export default class ApplicationService {
 
     public async approveOrDeny(application: Application, approved: ApprovalType): Promise<void> {
         const votes                  = application.votes;
-        const [channelId, messageId] = application.approvalMessageId.split(':');
-        const message                = await this.client.getMessage(channelId, messageId);
         const requester              = await this.client.users.get(application.requestUser);
         const dm                     = await requester.getDMChannel();
         if (approved === ApprovalType.APPROVED) {
@@ -220,11 +218,17 @@ https://apply.hotline.gg/${invite}
             application.votes = votes;
         }
         await application.save();
-
         await sleep(1000)
-        await message.removeReactions()
-        await message.addReaction(approved === ApprovalType.APPROVED ? '✅' : '❌')
-        await message.addReaction('👌')
+
+        const [approvalChannelId, approvalMessageId] = application.approvalMessageId.split(':');
+        const approvalMessage                        = await this.client.getMessage(approvalChannelId, approvalMessageId);
+        const [voteChannelId, voteMessageId]         = application.voteMessageId.split(':')
+        const voteMessage                            = await this.client.getMessage(voteChannelId, voteMessageId);
+
+        await voteMessage.removeReactions()
+        await voteMessage.addReaction(approved === ApprovalType.APPROVED ? '✅' : '❌')
+        await voteMessage.addReaction('👌')
+        await approvalMessage.addReaction('👌')
     }
 
     public getApproval(application: Application): ApprovalType {
