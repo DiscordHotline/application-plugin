@@ -102,23 +102,26 @@ export default class ApplicationVoteListener {
         const reactions      = message.reactions;
         const { votePassed } = application;
         const reactionKeys   = Object.keys(reactions);
+        const passEmote      = votePassed === ApprovalType.APPROVED ? '✅' : '❌'
 
-        if (reactionKeys.length === 0 && votePassed === ApprovalType.AWAITING) {
-            try {
-                await message.addReaction('✅');
-                await message.addReaction('❌');
-            } catch (ignored) {
-            }
-        }
-
-        const votes     = await this.appService.getVotes(message, true);
-        votes.entries   = {...application.votes.entries, ...votes.entries};
-        votes.approvals = 0;
-        votes.denies    = 0;
-
-        application.votes = votes;
         
         if (votePassed === ApprovalType.AWAITING) {
+            if (reactionKeys.length === 0) {
+                try {
+                    await message.addReaction('✅');
+                    await message.addReaction('❌');
+                } catch (err) {
+                    this.logger.error('An issue has occurred while trying to add initial vote reactions: %O', err)
+                    return
+                }
+            }
+
+            const votes     = await this.appService.getVotes(message, true);
+            votes.entries   = {...application.votes.entries, ...votes.entries};
+            votes.approvals = 0;
+            votes.denies    = 0;
+    
+            application.votes = votes;
             await application.save();
 
             const embed        = message.embeds[0];
@@ -143,7 +146,27 @@ export default class ApplicationVoteListener {
 
             await message.removeReactions();
             await message.addReaction('👌');
-            await message.addReaction(votePassed === ApprovalType.APPROVED ? '✅' : '❌');
+            await message.addReaction(passEmote);
+        } else {
+            try {
+                await this.removeExcessReactions('👌', message)
+                await this.removeExcessReactions(passEmote, message);
+            } catch (err) {
+                this.logger.error('An issue occurred while checking and removing excess reactions: %O', err)
+            }
+        }
+    }
+
+    private async removeExcessReactions (emote: string, message: Message) {
+        const reactionCounts = message.reactions
+
+        if (reactionCounts[emote].count > 1) {
+            const allReactions = await this.client.getMessageReaction(message.channel.id, message.id, emote)
+            const toRemove = allReactions.filter(user => user.id !== this.client.user.id)
+
+            toRemove.forEach(async (member) => {
+               await message.removeReaction(emote, member.id)
+            })
         }
     }
 }
