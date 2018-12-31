@@ -1,4 +1,4 @@
-import {Client, Invite, Message, TextableChannel, TextChannel, Constants as erisConstants} from 'eris';
+import {Client, Invite, Message, TextableChannel, TextChannel} from 'eris';
 import {types as CFTypes} from 'eris-command-framework';
 import Embed from 'eris-command-framework/Model/Embed';
 import {inject, injectable} from 'inversify';
@@ -391,15 +391,8 @@ https://apply.hotline.gg/${invite}
 
     private async closeDiscussionChannel(application: Application): Promise<void> {
         const discussionChannel = this.client.getChannel(application.discussionChannel) as TextChannel
-        const permConstants = erisConstants.Permissions
-        const newPerms = permConstants.readMessages | permConstants.sendMessages
 
-        await discussionChannel.editPermission(
-            this.config.hotlineGuildId,
-            0,
-            newPerms,
-            'role'
-        )
+        await discussionChannel.deletePermission(this.config.serverOwnerRole)
         return
     }
 
@@ -416,7 +409,7 @@ https://apply.hotline.gg/${invite}
 
         try {
             const discussionChannel = (await this.client.createChannel(this.config.hotlineGuildId, sanitizedName, 0, null, discussionCategory.id)) as TextChannel
-            
+
             application.discussionChannel = discussionChannel.id
             await application.save()
 
