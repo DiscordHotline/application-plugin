@@ -69,6 +69,9 @@ export default class Application extends BaseEntity {
     @Column({type: 'varchar', length: 64, name: 'vote_message_id', nullable: true})
     public voteMessageId: string;
 
+    @Column({type: 'bigint', name: 'discussion_channel', nullable: true})
+    public discussionChannel: string;
+
     @Column({type: 'varchar', length: 16, name: 'hotline_invite_code', nullable: true})
     public hotlineInviteCode: string;
 
