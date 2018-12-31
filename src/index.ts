@@ -14,6 +14,7 @@ export interface Config {
     voteChannel       : string;
     discussionCategory: string;
     inviteChannel     : string;
+    serverOwnerRole   : string;
 }
 
 @injectable()
