@@ -9,10 +9,11 @@ import ApplicationService from './Service/ApplicationService';
 import Types from './types';
 
 export interface Config {
-    hotlineGuildId: string;
-    approvalChannel: string;
-    voteChannel: string;
-    inviteChannel: string;
+    hotlineGuildId    : string;
+    approvalChannel   : string;
+    voteChannel       : string;
+    discussionCategory: string;
+    inviteChannel     : string;
 }
 
 @injectable()
