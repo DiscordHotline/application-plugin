@@ -1,9 +1,10 @@
-import {Client, Invite, Message, TextableChannel} from 'eris';
+import {Client, Invite, Message, TextableChannel, TextChannel, Constants as erisConstants} from 'eris';
 import {types as CFTypes} from 'eris-command-framework';
 import Embed from 'eris-command-framework/Model/Embed';
 import {inject, injectable} from 'inversify';
 import * as millisec from 'millisec';
 import * as moment from 'moment';
+import * as transliteration from 'transliteration';
 import {Connection, Repository} from 'typeorm';
 import {Logger} from 'winston';
 
@@ -76,10 +77,7 @@ export default class ApplicationService {
         const requester = await this.restClient.getRESTUser(application.requestUser);
         let invite: Invite;
         try {
-            invite = await this.client.getInvite(
-                application.inviteCode.replace(/https:\/\/discord\.gg\//, ''),
-                true,
-            );
+            invite = await this.getInvite(application.inviteCode)
         } catch (e) {
             this.logger.error('Failed to find invite for application: %j', application);
 
@@ -155,6 +153,12 @@ export default class ApplicationService {
     public async checkApplication(application: Application): Promise<void> {
         await this.postApplicationMessage(application, true);
 
+        // If there's no discussion channel for this application, create it
+        if (!application.discussionChannel) {
+            await this.createDiscussionChannel(application)
+            this.logger.info('Create an discussion channel for Application "%s"', application.server)
+        }
+
         const now  = moment();
         const date = moment(application.insertDate);
         const diff = moment.duration(date.add(3, 'd').diff(now)).asHours();
@@ -217,8 +221,12 @@ https://apply.hotline.gg/${invite}
         if (votes !== null) {
             application.votes = votes;
         }
-        await application.save();
+        await application.save();   
         await sleep(1000)
+
+        if (application.discussionChannel) {
+            await this.closeDiscussionChannel(application)
+        }
 
         const [approvalChannelId, approvalMessageId] = application.approvalMessageId.split(':');
         const approvalMessage                        = await this.client.getMessage(approvalChannelId, approvalMessageId);
@@ -378,7 +386,69 @@ https://apply.hotline.gg/${invite}
     private async getInvite(invite: string): Promise<Invite> {
         const inviteCode = invite.replace(/https:\/\/discord\.gg\//, '')
     
-        return this.client.getInvite(invite, true)
+        return this.client.getInvite(inviteCode, true)
+    }
+
+    private async closeDiscussionChannel(application: Application): Promise<void> {
+        const discussionChannel = this.client.getChannel(application.discussionChannel) as TextChannel
+        const permConstants = erisConstants.Permissions
+        const newPerms = permConstants.readMessages | permConstants.sendMessages
+
+        await discussionChannel.editPermission(
+            this.config.hotlineGuildId,
+            0,
+            newPerms,
+            'role'
+        )
+        return
+    }
+
+    private async createDiscussionChannel(application: Application): Promise<TextChannel> {
+        const discussionCategory = this.client.getChannel(this.config.discussionCategory)
+        if (!discussionCategory) {
+            throw new Error('Can\'t find the discussion category')
+        }
+
+        let sanitizedName = transliteration.slugify(application.server)
+        if (sanitizedName === '') {
+            sanitizedName = application.serverId
+        }
+
+        try {
+            const discussionChannel = (await this.client.createChannel(this.config.hotlineGuildId, sanitizedName, 0, null, discussionCategory.id)) as TextChannel
+            
+            application.discussionChannel = discussionChannel.id
+            await application.save()
+
+            // Create info message
+            const requester          = await this.restClient.getRESTUser(application.requestUser)
+            const invite             = await this.getInvite(application.inviteCode)
+            const informationMessage = await discussionChannel.createMessage({embed: {
+                title      : application.server,
+                description: application.reason,
+                color      : 7506394,
+                author     : {
+                    name   : `${requester.username}#${requester.discriminator}`,
+                    iconUrl: requester.avatarURL,
+                },
+                thumbnail:   {
+                    url: `https://cdn.discordapp.com/icons/${invite.guild.id}/${invite.guild.icon}.webp`,
+                },
+                fields:      [
+                    {name: 'Invite: ', value: application.inviteCode, inline: true},
+                    {name: 'Members: ', value: `${invite.presenceCount} / ${invite.memberCount}`, inline: true},
+                ],
+                footer: {
+                    text: `Application ID: ${application.id}`
+                }
+            }})
+
+            await informationMessage.pin()
+            return discussionChannel
+        } catch (err) {
+            this.logger.error(`An error has occurred while trying to create an discussion channel: %O`, err)
+            throw err
+        }
     }
 }
 
