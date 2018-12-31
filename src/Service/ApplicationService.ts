@@ -374,6 +374,12 @@ https://apply.hotline.gg/${invite}
             }
         }
     }
+
+    private async getInvite(invite: string): Promise<Invite> {
+        const inviteCode = invite.replace(/https:\/\/discord\.gg\//, '')
+    
+        return this.client.getInvite(invite, true)
+    }
 }
 
 const sleep = async (ms) => new Promise((resolve) => setTimeout(resolve, ms));
