@@ -1,4 +1,4 @@
-import {Client, Invite, Message, TextableChannel, TextChannel} from 'eris';
+import {Client, Invite as discordInvite, Message, TextableChannel, TextChannel} from 'eris';
 import {types as CFTypes} from 'eris-command-framework';
 import Embed from 'eris-command-framework/Model/Embed';
 import {inject, injectable} from 'inversify';
@@ -9,6 +9,7 @@ import {Connection, Repository} from 'typeorm';
 import {Logger} from 'winston';
 
 import Application, {ApprovalType, VoteResults, VoteType} from '../Entity/Application';
+import hotlineInvite from '../Entity/Invite'
 import {Config} from '../index';
 import Types from '../types';
 
@@ -75,7 +76,7 @@ export default class ApplicationService {
         }
 
         const requester = await this.restClient.getRESTUser(application.requestUser);
-        let invite: Invite;
+        let invite;
         try {
             invite = await this.getDiscordInvite(application.inviteCode)
         } catch (e) {
@@ -383,10 +384,25 @@ https://apply.hotline.gg/${invite}
         }
     }
 
-    private async getDiscordInvite(invite: string): Promise<Invite> {
+    private async getDiscordInvite(invite: string): Promise<discordInvite> {
         const inviteCode = invite.replace(/https:\/\/discord\.gg\//, '')
     
         return this.client.getInvite(inviteCode, true)
+    }
+
+    public async createHotlineInvite(maxUses?: number, expiresAt?: Date): Promise<hotlineInvite> {
+        const generatedCode = ApplicationService.makeId(8)
+        let   invite        = new hotlineInvite()
+
+        invite.code        = generatedCode
+        invite.useMetadata = []
+        if (expiresAt) {
+            invite.expiresAt = expiresAt
+        } if (maxUses) {
+            invite.maxUses = maxUses
+        }
+
+        return invite.save()
     }
 
     private async closeDiscussionChannel(application: Application): Promise<void> {
