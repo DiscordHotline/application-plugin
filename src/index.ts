@@ -59,6 +59,23 @@ export default class extends AbstractPlugin {
         const invite = await this.appService.createHotlineInvite(maxUses)
         this.reply(invite.code)
     }
+
+    @Decorator.Command('invite revoke', 'Revokes an invite')
+    @Decorator.Permission('invite.revoke')
+    public async revokeInviteCommand(inviteCode: string): Promise<void> {
+        const invite = await hotlineInvite.findOne({code: inviteCode})
+
+        if (!invite) {
+            await this.reply('Unknown invite')
+            return
+        }
+        
+        invite.revoked = true
+        await invite.save()
+
+        await this.reply(`Successfully revoked invite ${inviteCode}`)
+    }
+
     @Decorator.Command('app approve', 'Approves an application')
     @Decorator.Permission('application.approve')
     public async ApproveCommand(id: number): Promise<void> {
