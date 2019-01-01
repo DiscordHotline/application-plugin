@@ -396,7 +396,7 @@ https://apply.hotline.gg/${invite}
         return
     }
 
-    private async createDiscussionChannel(application: Application): Promise<TextChannel> {
+    public async createDiscussionChannel(application: Application): Promise<TextChannel> {
         const discussionCategory = this.client.getChannel(this.config.discussionCategory)
         if (!discussionCategory) {
             throw new Error('Can\'t find the discussion category')

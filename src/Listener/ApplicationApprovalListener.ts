@@ -201,8 +201,10 @@ export default class ApplicationApprovalListener {
 
         this.logger.info('Approval vote has been approved for "%s"', application.server);
 
-        const voteMessage = await this.appService.postApplicationMessage(application, false);
-        application.voteMessageId = voteMessage.channel.id + ':' + voteMessage.id;
+        const voteMessage                   = await this.appService.postApplicationMessage(application, false);
+              application.voteMessageId     = voteMessage.channel.id + ':' + voteMessage.id;
+              application.discussionChannel = (await this.appService.createDiscussionChannel(application)).id
+
         await application.save();
         await sleep(500);
 
