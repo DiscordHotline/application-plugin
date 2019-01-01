@@ -53,6 +53,12 @@ export default class extends AbstractPlugin {
         return;
     }
 
+    @Decorator.Command('invite create', 'Creates an invite')
+    @Decorator.Permission('invite.create')
+    public async createInviteCommand(maxUses: number): Promise<void> {
+        const invite = await this.appService.createHotlineInvite(maxUses)
+        this.reply(invite.code)
+    }
     @Decorator.Command('app approve', 'Approves an application')
     @Decorator.Permission('application.approve')
     public async ApproveCommand(id: number): Promise<void> {
