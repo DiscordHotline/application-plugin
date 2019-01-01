@@ -34,8 +34,6 @@ export default class extends AbstractPlugin {
         return [Application];
     }
 
-    x;
-
     @inject(Types.application.listener.approval)
     private applicationListener: ApplicationApprovalListener;
 
