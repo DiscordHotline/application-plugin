@@ -7,6 +7,7 @@ import ApplicationApprovalListener from './Listener/ApplicationApprovalListener'
 import ApplicationVoteListener from './Listener/ApplicationVoteListener';
 import ApplicationService from './Service/ApplicationService';
 import Types from './types';
+import hotlineInvite from './Entity/Invite';
 
 export interface Config {
     hotlineGuildId    : string;
@@ -31,7 +32,7 @@ export default class extends AbstractPlugin {
     }
 
     public static getEntities(): any[] {
-        return [Application];
+        return [Application, hotlineInvite];
     }
 
     @inject(Types.application.listener.approval)
