@@ -77,7 +77,7 @@ export default class ApplicationService {
         const requester = await this.restClient.getRESTUser(application.requestUser);
         let invite: Invite;
         try {
-            invite = await this.getInvite(application.inviteCode)
+            invite = await this.getDiscordInvite(application.inviteCode)
         } catch (e) {
             this.logger.error('Failed to find invite for application: %j', application);
 
@@ -383,7 +383,7 @@ https://apply.hotline.gg/${invite}
         }
     }
 
-    private async getInvite(invite: string): Promise<Invite> {
+    private async getDiscordInvite(invite: string): Promise<Invite> {
         const inviteCode = invite.replace(/https:\/\/discord\.gg\//, '')
     
         return this.client.getInvite(inviteCode, true)
@@ -415,7 +415,7 @@ https://apply.hotline.gg/${invite}
 
             // Create info message
             const requester          = await this.restClient.getRESTUser(application.requestUser)
-            const invite             = await this.getInvite(application.inviteCode)
+            const invite             = await this.getDiscordInvite(application.inviteCode)
             const informationMessage = await discussionChannel.createMessage({embed: {
                 title      : application.server,
                 description: application.reason,
