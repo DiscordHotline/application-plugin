@@ -180,7 +180,8 @@ export default class ApplicationService {
     public async approveOrDeny(application: Application, approved: ApprovalType): Promise<void> {
         const votes                  = application.votes;
         const requester              = await this.client.users.get(application.requestUser);
-        const dm                     = await requester.getDMChannel();
+        let replyEmbed;
+        
         if (approved === ApprovalType.APPROVED) {
             const invite                  = ApplicationService.makeId(8);
             application.hotlineInviteCode = invite;
@@ -193,7 +194,7 @@ export default class ApplicationService {
             });
             application.serverRoleId = role.id;
 
-            const msg = await dm.createMessage({
+            replyEmbed = {
                 embed: {
                     description: `Your application for ${application.server} has passed!
 
@@ -207,14 +208,24 @@ talk to the Discord Hotline Staff, and ask for permission.
 https://apply.hotline.gg/${invite}
 `,
                 },
-            });
-            await msg.pin();
+            }
         } else {
-            await dm.createMessage({
+            replyEmbed = {
                 embed: {
                     description: `Your application for ${application.server} has been denied`,
                 },
-            });
+            }
+        }
+
+        try {
+            const dmChannel   = await requester.getDMChannel()
+            const sentMessage = await dmChannel.createMessage(replyEmbed)
+
+            if (approved === ApprovalType.APPROVED) {
+                await sentMessage.pin()
+            }
+        } catch (error) {
+            this.logger.info('Failed to PM the final result of application "%s" to %s', application.server, application.requestUser)
         }
 
         application.passedDate = new Date();
