@@ -57,7 +57,7 @@ export default class extends AbstractPlugin {
     @Decorator.Permission('invite.create')
     public async createInviteCommand(maxUses: number): Promise<void> {
         const invite = await this.appService.createHotlineInvite(maxUses)
-        this.reply(invite.code)
+        this.reply(`https://apply.hotline.gg/${invite.code}`)
     }
 
     @Decorator.Command('invite revoke', 'Revokes an invite')
