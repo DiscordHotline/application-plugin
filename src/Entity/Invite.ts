@@ -16,6 +16,9 @@ export default class Invite extends BaseEntity {
   @Column({type: 'datetime', name: 'expiresAt', nullable: true})
   public expiresAt?: Date
 
+  @Column({type: 'tinyint', name: 'applicationId', nullable: true})
+  public applicationId?: number
+
   @Column({type: 'varchar', name: 'code', length: 100})
   @Index({unique: true})
   public code: string
