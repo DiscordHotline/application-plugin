@@ -183,8 +183,8 @@ export default class ApplicationService {
         let replyEmbed;
         
         if (approved === ApprovalType.APPROVED) {
-            const invite                  = ApplicationService.makeId(8);
-            application.hotlineInviteCode = invite;
+            // Create invite
+            const invite = await this.createHotlineInvite(5, null, application.id)
 
             // @todo Alphabetize roles after creating.
             const guild              = this.client.guilds.get(this.config.hotlineGuildId);
@@ -205,7 +205,7 @@ If you are also a member of this server, please click the link.
 Please limit yourself to invite 5 people. If you think you need more,
 talk to the Discord Hotline Staff, and ask for permission.
 
-https://apply.hotline.gg/${invite}
+https://apply.hotline.gg/${invite.code}
 `,
                 },
             }
@@ -401,16 +401,19 @@ https://apply.hotline.gg/${invite}
         return this.client.getInvite(inviteCode, true)
     }
 
-    public async createHotlineInvite(maxUses?: number, expiresAt?: Date): Promise<hotlineInvite> {
+    public async createHotlineInvite(maxUses?: number, expiresAt?: Date, applicationId?: number): Promise<hotlineInvite> {
         const generatedCode = ApplicationService.makeId(8)
-        let   invite        = new hotlineInvite()
 
-        invite.code        = generatedCode
-        invite.useMetadata = []
+        let invite             = new hotlineInvite()
+            invite.code        = generatedCode
+            invite.useMetadata = []
+
         if (expiresAt) {
             invite.expiresAt = expiresAt
         } if (maxUses) {
             invite.maxUses = maxUses
+        } if (applicationId) {
+            invite.applicationId = applicationId
         }
 
         return invite.save()
