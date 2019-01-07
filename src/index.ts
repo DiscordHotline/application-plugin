@@ -162,7 +162,7 @@ export default class extends AbstractPlugin {
 
         await this.embedMessage((x) => {
             x.author = {
-                name: 'Vote Results for: ' + application.server,
+                name: 'Vote Results for: ' + application.guild.name,
             };
             x.fields = fields;
             x.title  = `Current Results: ${approvals} - ${denies}`;

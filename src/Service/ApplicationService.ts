@@ -89,7 +89,7 @@ export default class ApplicationService {
         const votes = await this.countVotes(application);
 
         const embed: Embed = new Embed({
-            title:       application.server,
+            title:       application.guild.name,
             description: application.reason,
             timestamp:   application.approvedDate,
             author:      {
@@ -162,14 +162,14 @@ export default class ApplicationService {
         // If there's no discussion channel for this application, create it
         if (!application.discussionChannel) {
             await this.createDiscussionChannel(application);
-            this.logger.info('Create an discussion channel for Application "%s"', application.server);
+            this.logger.info('Create an discussion channel for Application "%s"', application.guild.name);
         }
 
         const now  = moment();
         const date = moment(application.insertDate);
         const diff = moment.duration(date.add(3, 'd').diff(now)).asHours();
         if (diff > 0) {
-            this.logger.info('Application "%s" has %d more hours.', application.server, diff);
+            this.logger.info('Application "%s" has %d more hours.', application.guild.name, diff);
 
             return;
         }
@@ -194,14 +194,14 @@ export default class ApplicationService {
             // @todo Alphabetize roles after creating.
             const guild              = this.client.guilds.get(this.config.hotlineGuildId);
             const role               = await guild.createRole({
-                name:        application.server.replace(/[\W_\s]+/g, ''),
+                name:        application.guild.name.replace(/[\W_\s]+/g, ''),
                 permissions: 0,
             });
             application.guild.roleId = role.id;
 
             replyEmbed = {
                 embed: {
-                    description: `Your application for ${application.server} has passed!
+                    description: `Your application for ${application.guild.name} has passed!
 
 Here is the permanent invite link for this. 
 Please pass this along to the people who want to join the server.
@@ -217,7 +217,7 @@ https://apply.hotline.gg/${invite.code}
         } else {
             replyEmbed = {
                 embed: {
-                    description: `Your application for ${application.server} has been denied`,
+                    description: `Your application for ${application.guild.name} has been denied`,
                 },
             };
         }
@@ -232,7 +232,7 @@ https://apply.hotline.gg/${invite.code}
         } catch (error) {
             this.logger.info(
                 'Failed to PM the final result of application "%s" to %s',
-                application.server,
+                application.guild.name,
                 application.requestUser,
             );
         }
@@ -271,7 +271,7 @@ https://apply.hotline.gg/${invite.code}
         if (votes.approvals < 10 && votes.denies < 2) {
             this.logger.info(
                 'Public Vote is still awaiting for "%s" (not enough votes, A: %d, D: %d)',
-                application.server,
+                application.guild.name,
                 votes.approvals,
                 votes.denies,
             );
@@ -284,7 +284,7 @@ https://apply.hotline.gg/${invite.code}
 
             this.logger.info(
                 'Public Vote is denied for "%s" (>= 3x denies, A: %d, D: %d)',
-                application.server,
+                application.guild.name,
                 votes.approvals,
                 votes.denies,
             );
@@ -297,7 +297,7 @@ https://apply.hotline.gg/${invite.code}
 
             this.logger.info(
                 'Public Vote is still awaiting for "%s" (>= 2 denies, A: %d, D: %d)',
-                application.server,
+                application.guild.name,
                 votes.approvals,
                 votes.denies,
             );
@@ -309,7 +309,7 @@ https://apply.hotline.gg/${invite.code}
         if (votes.denies >= 5 && votes.approvals < 10) {
             this.logger.info(
                 'Public Vote is denied for "%s" (A: %d, D: %d)',
-                application.server,
+                application.guild.name,
                 votes.approvals,
                 votes.denies,
             );
@@ -321,7 +321,7 @@ https://apply.hotline.gg/${invite.code}
         if (votes.approvals >= 10) {
             this.logger.info(
                 'Public Vote has passed for "%s" (A: %d, D: %d)',
-                application.server,
+                application.guild.name,
                 votes.approvals,
                 votes.denies,
             );
@@ -333,7 +333,7 @@ https://apply.hotline.gg/${invite.code}
 
         this.logger.info(
             'Public vote is still awaiting for "%s" (no reason, A: %d, D: %d)',
-            application.server,
+            application.guild.name,
             votes.approvals,
             votes.denies,
         );
@@ -426,7 +426,7 @@ https://apply.hotline.gg/${invite.code}
             throw new Error('Can\'t find the discussion category');
         }
 
-        let sanitizedName = transliteration.slugify(application.server);
+        let sanitizedName = transliteration.slugify(application.guild.name);
         if (sanitizedName === '') {
             sanitizedName = application.guild.id;
         }
@@ -448,7 +448,7 @@ https://apply.hotline.gg/${invite.code}
             const invite             = await this.getDiscordInvite(application.inviteCode);
             const informationMessage = await discussionChannel.createMessage({
                 embed: {
-                    title:       application.server,
+                    title:       application.guild.name,
                     description: application.reason,
                     color:       7506394,
                     author:      {

@@ -31,9 +31,6 @@ export default class Application extends BaseEntity {
     @Column({type: 'bigint', name: 'request_user'})
     public requestUser: string;
 
-    @Column({type: 'varchar', name: 'server', length: 255})
-    public server: string;
-
     @OneToOne((_type) => Guild, (guild) => guild.application, {eager: true})
     public guild: Guild;
 

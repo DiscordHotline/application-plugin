@@ -21,6 +21,9 @@ export default class Guild extends BaseEntity {
     @PrimaryColumn({type: 'bigint'})
     public id: string;
 
+    @Column({type: 'varchar', name: 'name', length: 255})
+    public name: string;
+
     @CreateDateColumn({type: 'timestamp', name: 'createdAt'})
     public createdAt: Date;
 
