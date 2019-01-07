@@ -2,9 +2,8 @@ import {AbstractPlugin} from 'eris-command-framework';
 import Decorator from 'eris-command-framework/Decorator';
 import {Container, inject, injectable} from 'inversify';
 
-import Application, {ApprovalType, VoteType} from './Entity/Application';
-import Guild from './Entity/Guild';
-import HotlineInvite from './Entity/Invite';
+import {Application, Guild, Invite as HotlineInvite} from './Entity';
+import {ApprovalType, VoteType} from './Entity/Application';
 import ApplicationApprovalListener from './Listener/ApplicationApprovalListener';
 import ApplicationVoteListener from './Listener/ApplicationVoteListener';
 import ApplicationService from './Service/ApplicationService';
@@ -18,6 +17,9 @@ export interface Config {
     inviteChannel: string;
     serverOwnerRole: string;
 }
+
+export const Entities = {Application, Guild, Invite: HotlineInvite};
+export {ApprovalType, VoteType} from './Entity/Application';
 
 @injectable()
 export default class extends AbstractPlugin {
