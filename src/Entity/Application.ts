@@ -1,4 +1,4 @@
-import {BaseEntity, Column, Entity, OneToOne, PrimaryGeneratedColumn} from 'typeorm';
+import {BaseEntity, Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn} from 'typeorm';
 import Guild from './Guild';
 
 export interface Vote {
@@ -32,6 +32,7 @@ export default class Application extends BaseEntity {
     public requestUser: string;
 
     @OneToOne((_type) => Guild, (guild) => guild.application, {eager: true})
+    @JoinColumn()
     public guild: Guild;
 
     @Column({type: 'text', name: 'reason'})

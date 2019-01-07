@@ -1,4 +1,13 @@
-import {BaseEntity, Column, CreateDateColumn, Entity, Index, ManyToOne, PrimaryGeneratedColumn} from 'typeorm';
+import {
+    BaseEntity,
+    Column,
+    CreateDateColumn,
+    Entity,
+    Index,
+    JoinColumn,
+    ManyToOne,
+    PrimaryGeneratedColumn,
+} from 'typeorm';
 import Guild from './Guild';
 
 export interface UseMetadata {
@@ -15,6 +24,7 @@ export default class Invite extends BaseEntity {
     public createdAt: Date;
 
     @ManyToOne((_type) => Guild, (guild) => guild.invites, {eager: true})
+    @JoinColumn()
     public guild: Guild;
 
     @Column({type: 'datetime', name: 'expiresAt', nullable: true})
