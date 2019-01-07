@@ -37,6 +37,6 @@ export default class Guild extends BaseEntity {
     @Column({type: 'simple-array'})
     public owners: string[];
 
-    @Column({type: 'bigint', name: 'server_role_id', nullable: true})
-    public roleId: string;
+    @Column({type: 'bigint', nullable: true})
+    public roleId?: string | null;
 }
