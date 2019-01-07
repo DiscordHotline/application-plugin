@@ -3,19 +3,20 @@ import Decorator from 'eris-command-framework/Decorator';
 import {Container, inject, injectable} from 'inversify';
 
 import Application, {ApprovalType, VoteType} from './Entity/Application';
+import Guild from './Entity/Guild';
+import HotlineInvite from './Entity/Invite';
 import ApplicationApprovalListener from './Listener/ApplicationApprovalListener';
 import ApplicationVoteListener from './Listener/ApplicationVoteListener';
 import ApplicationService from './Service/ApplicationService';
 import Types from './types';
-import hotlineInvite from './Entity/Invite';
 
 export interface Config {
-    hotlineGuildId    : string;
-    approvalChannel   : string;
-    voteChannel       : string;
+    hotlineGuildId: string;
+    approvalChannel: string;
+    voteChannel: string;
     discussionCategory: string;
-    inviteChannel     : string;
-    serverOwnerRole   : string;
+    inviteChannel: string;
+    serverOwnerRole: string;
 }
 
 @injectable()
@@ -32,7 +33,7 @@ export default class extends AbstractPlugin {
     }
 
     public static getEntities(): any[] {
-        return [Application, hotlineInvite];
+        return [Application, HotlineInvite, Guild];
     }
 
     @inject(Types.application.listener.approval)
@@ -49,31 +50,37 @@ export default class extends AbstractPlugin {
         await this.appService.initialize();
         await this.applicationListener.initialize();
         await this.voteListener.initialize();
+    }
 
-        return;
+    @Decorator.Command('color', 'Updates a role color', 'Updates the role color for the given guild.')
+    @Decorator.Permission('color.update')
+    public async updateColorCommand(guild: string, color: string): Promise<void> {
+        console.log(guild, color);
     }
 
     @Decorator.Command('invite create', 'Creates an invite')
     @Decorator.Permission('invite.create')
     public async createInviteCommand(maxUses: number): Promise<void> {
-        const invite = await this.appService.createHotlineInvite(maxUses)
-        this.reply(`https://apply.hotline.gg/${invite.code}`)
+        const invite = await this.appService.createHotlineInvite(maxUses);
+
+        await this.reply(`https://apply.hotline.gg/${invite.code}`);
     }
 
     @Decorator.Command('invite revoke', 'Revokes an invite')
     @Decorator.Permission('invite.revoke')
     public async revokeInviteCommand(inviteCode: string): Promise<void> {
-        const invite = await hotlineInvite.findOne({code: inviteCode})
+        const invite = await HotlineInvite.findOne({code: inviteCode});
 
         if (!invite) {
-            await this.reply('Unknown invite')
-            return
-        }
-        
-        invite.revoked = true
-        await invite.save()
+            await this.reply('Unknown invite');
 
-        await this.reply(`Successfully revoked invite ${inviteCode}`)
+            return;
+        }
+
+        invite.revoked = true;
+        await invite.save();
+
+        await this.reply(`Successfully revoked invite ${inviteCode}`);
     }
 
     @Decorator.Command('app approve', 'Approves an application')
@@ -125,11 +132,11 @@ export default class extends AbstractPlugin {
         }
 
         await this.embedMessage((x) => {
-            x.author  = {
+            x.author = {
                 name: 'Vote Results for: ' + application.server,
             };
             x.fields = fields;
-            x.title = `Current Results: ${approvals} - ${denies}`;
+            x.title  = `Current Results: ${approvals} - ${denies}`;
         });
     }
 };

@@ -1,4 +1,5 @@
-import {BaseEntity, Column, Entity, PrimaryGeneratedColumn} from 'typeorm';
+import {BaseEntity, Column, Entity, OneToOne, PrimaryGeneratedColumn} from 'typeorm';
+import Guild from './Guild';
 
 export interface Vote {
     User: string;
@@ -22,7 +23,7 @@ export interface VoteResults {
     entries: { [userId: string]: VoteType };
 }
 
-@Entity({database: 'applications', synchronize: true, name: 'applications'})
+@Entity({name: 'application'})
 export default class Application extends BaseEntity {
     @PrimaryGeneratedColumn({name: 'id'})
     public id: number;
@@ -34,7 +35,8 @@ export default class Application extends BaseEntity {
     public server: string;
 
     @Column({type: 'bigint', name: 'server_id', nullable: true})
-    public serverId: string;
+    @OneToOne((_type) => Guild, (guild) => guild.application)
+    public guild: Guild;
 
     @Column({type: 'text', name: 'reason'})
     public reason: string;

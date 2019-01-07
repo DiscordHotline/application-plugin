@@ -1,7 +1,7 @@
 {
     "name": "@hotline/application-plugin",
-    "pluginTitle": "Application",
-    "description": "Application Plugin for the Hotline Bot",
+    "pluginTitle": "Hotline",
+    "description": "Hotline Server Plugin for the Hotline Bot",
     "main": "index.js",
     "types": "index.d.ts",
     "scripts": {

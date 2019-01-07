@@ -9,7 +9,8 @@ import {Connection, Repository} from 'typeorm';
 import {Logger} from 'winston';
 
 import Application, {ApprovalType, VoteResults, VoteType} from '../Entity/Application';
-import hotlineInvite from '../Entity/Invite'
+import Guild from '../Entity/Guild';
+import HotlineInvite from '../Entity/Invite';
 import {Config} from '../index';
 import Types from '../types';
 
@@ -33,11 +34,11 @@ export default class ApplicationService {
     private checkInterval: NodeJS.Timeout;
 
     public constructor(
-        @inject(CFTypes.connection) connection               : Connection,
-        @inject(CFTypes.discordClient) private client        : Client,
-        @inject(CFTypes.logger) private logger               : Logger,
-        @inject(Types.application.config) private config     : Config,
-        @inject(CFTypes.discordRestClient) private restClient: Client
+        @inject(CFTypes.connection) connection: Connection,
+        @inject(CFTypes.discordClient) private client: Client,
+        @inject(CFTypes.logger) private logger: Logger,
+        @inject(Types.application.config) private config: Config,
+        @inject(CFTypes.discordRestClient) private restClient: Client,
     ) {
         this.repo = connection.getRepository<Application>(Application);
     }
@@ -78,14 +79,14 @@ export default class ApplicationService {
         const requester = await this.restClient.getRESTUser(application.requestUser);
         let invite;
         try {
-            invite = await this.getDiscordInvite(application.inviteCode)
+            invite = await this.getDiscordInvite(application.inviteCode);
         } catch (e) {
             this.logger.error('Failed to find invite for application: %j', application);
 
             throw e;
         }
 
-        const votes = await this.countVotes(application)
+        const votes = await this.countVotes(application);
 
         const embed: Embed = new Embed({
             title:       application.server,
@@ -101,7 +102,11 @@ export default class ApplicationService {
             fields:      [
                 {name: 'Invite: ', value: application.inviteCode, inline: true},
                 {name: 'Members: ', value: `${invite.presenceCount} / ${invite.memberCount}`, inline: true},
-                {name: 'Votes', value: votes.entries ? Object.keys(votes.entries).length.toString() : '0', inline: true},
+                {
+                    name:   'Votes',
+                    value:  votes.entries ? Object.keys(votes.entries).length.toString() : '0',
+                    inline: true,
+                },
             ],
             footer:      {
                 text: `Application ID: ${application.id} | Time Left: ${timeLeft}`,
@@ -133,7 +138,7 @@ export default class ApplicationService {
     }
 
     public async getApplication(applicationId): Promise<Application> {
-        return this.repo.findOne({id: applicationId})
+        return this.repo.findOne({id: applicationId});
     }
 
     public async checkOpenApplications(): Promise<void> {
@@ -156,8 +161,8 @@ export default class ApplicationService {
 
         // If there's no discussion channel for this application, create it
         if (!application.discussionChannel) {
-            await this.createDiscussionChannel(application)
-            this.logger.info('Create an discussion channel for Application "%s"', application.server)
+            await this.createDiscussionChannel(application);
+            this.logger.info('Create an discussion channel for Application "%s"', application.server);
         }
 
         const now  = moment();
@@ -178,13 +183,13 @@ export default class ApplicationService {
     }
 
     public async approveOrDeny(application: Application, approved: ApprovalType): Promise<void> {
-        const votes                  = application.votes;
-        const requester              = await this.client.users.get(application.requestUser);
+        const votes     = application.votes;
+        const requester = await this.client.users.get(application.requestUser);
         let replyEmbed;
-        
+
         if (approved === ApprovalType.APPROVED) {
             // Create invite
-            const invite = await this.createHotlineInvite(5, null, application.id)
+            const invite = await this.createHotlineInvite(5, null, application.guild);
 
             // @todo Alphabetize roles after creating.
             const guild              = this.client.guilds.get(this.config.hotlineGuildId);
@@ -208,24 +213,28 @@ talk to the Discord Hotline Staff, and ask for permission.
 https://apply.hotline.gg/${invite.code}
 `,
                 },
-            }
+            };
         } else {
             replyEmbed = {
                 embed: {
                     description: `Your application for ${application.server} has been denied`,
                 },
-            }
+            };
         }
 
         try {
-            const dmChannel   = await requester.getDMChannel()
-            const sentMessage = await dmChannel.createMessage(replyEmbed)
+            const dmChannel   = await requester.getDMChannel();
+            const sentMessage = await dmChannel.createMessage(replyEmbed);
 
             if (approved === ApprovalType.APPROVED) {
-                await sentMessage.pin()
+                await sentMessage.pin();
             }
         } catch (error) {
-            this.logger.info('Failed to PM the final result of application "%s" to %s', application.server, application.requestUser)
+            this.logger.info(
+                'Failed to PM the final result of application "%s" to %s',
+                application.server,
+                application.requestUser,
+            );
         }
 
         application.passedDate = new Date();
@@ -233,23 +242,26 @@ https://apply.hotline.gg/${invite.code}
         if (votes !== null) {
             application.votes = votes;
         }
-        await application.save();   
-        await sleep(1000)
+        await application.save();
+        await sleep(1000);
 
         if (application.discussionChannel) {
-            await this.closeDiscussionChannel(application)
+            await this.closeDiscussionChannel(application);
         }
 
         const [approvalChannelId, approvalMessageId] = application.approvalMessageId.split(':');
-        const approvalMessage                        = await this.client.getMessage(approvalChannelId, approvalMessageId);
-        const [voteChannelId, voteMessageId]         = application.voteMessageId.split(':')
+        const approvalMessage                        = await this.client.getMessage(
+            approvalChannelId,
+            approvalMessageId,
+        );
+        const [voteChannelId, voteMessageId]         = application.voteMessageId.split(':');
         const voteMessage                            = await this.client.getMessage(voteChannelId, voteMessageId);
-        const passEmote                              = approved === ApprovalType.APPROVED ? '✅' : '❌'
+        const passEmote                              = approved === ApprovalType.APPROVED ? '✅' : '❌';
 
-        await voteMessage.removeReactions()
-        await voteMessage.addReaction(passEmote)
-        await voteMessage.addReaction('👌')
-        await approvalMessage.addReaction('👌')
+        await voteMessage.removeReactions();
+        await voteMessage.addReaction(passEmote);
+        await voteMessage.addReaction('👌');
+        await approvalMessage.addReaction('👌');
     }
 
     public getApproval(application: Application): ApprovalType {
@@ -363,9 +375,10 @@ https://apply.hotline.gg/${invite.code}
 
     public async countVotes(application: Application): Promise<VoteResults> {
         if (!application.votes) {
-            application = await this.getApplication(application.id)
-        } if (!application.votes.entries) {
-            return application.votes
+            application = await this.getApplication(application.id);
+        }
+        if (!application.votes.entries) {
+            return application.votes;
         }
 
         for (const user of Object.keys(application.votes.entries)) {
@@ -377,7 +390,91 @@ https://apply.hotline.gg/${invite.code}
                 application.votes.denies++;
             }
         }
+
         return application.votes;
+    }
+
+    public async createHotlineInvite(
+        maxUses?: number,
+        expiresAt?: Date,
+        guild?: Guild,
+    ): Promise<HotlineInvite> {
+        const generatedCode = ApplicationService.makeId(8);
+
+        let invite         = new HotlineInvite();
+        invite.code        = generatedCode;
+        invite.useMetadata = [];
+
+        if (expiresAt) {
+            invite.expiresAt = expiresAt;
+        }
+
+        if (maxUses) {
+            invite.maxUses = maxUses;
+        }
+
+        if (guild) {
+            invite.guild = guild;
+        }
+
+        return invite.save();
+    }
+
+    public async createDiscussionChannel(application: Application): Promise<TextChannel> {
+        const discussionCategory = this.client.getChannel(this.config.discussionCategory);
+        if (!discussionCategory) {
+            throw new Error('Can\'t find the discussion category');
+        }
+
+        let sanitizedName = transliteration.slugify(application.server);
+        if (sanitizedName === '') {
+            sanitizedName = application.guild.id;
+        }
+
+        try {
+            const discussionChannel = (await this.client.createChannel(
+                this.config.hotlineGuildId,
+                sanitizedName,
+                0,
+                null,
+                discussionCategory.id,
+            )) as TextChannel;
+
+            application.discussionChannel = discussionChannel.id;
+            await application.save();
+
+            // Create info message
+            const requester          = await this.restClient.getRESTUser(application.requestUser);
+            const invite             = await this.getDiscordInvite(application.inviteCode);
+            const informationMessage = await discussionChannel.createMessage({
+                embed: {
+                    title:       application.server,
+                    description: application.reason,
+                    color:       7506394,
+                    author:      {
+                        name:    `${requester.username}#${requester.discriminator}`,
+                        iconUrl: requester.avatarURL,
+                    },
+                    thumbnail:   {
+                        url: `https://cdn.discordapp.com/icons/${invite.guild.id}/${invite.guild.icon}.webp`,
+                    },
+                    fields:      [
+                        {name: 'Invite: ', value: application.inviteCode, inline: true},
+                        {name: 'Members: ', value: `${invite.presenceCount} / ${invite.memberCount}`, inline: true},
+                    ],
+                    footer:      {
+                        text: `Application ID: ${application.id}`,
+                    },
+                },
+            });
+
+            await informationMessage.pin();
+
+            return discussionChannel;
+        } catch (err) {
+            this.logger.error(`An error has occurred while trying to create an discussion channel: %O`, err);
+            throw err;
+        }
     }
 
     private setVoteCounts(application: Application): void {
@@ -396,82 +493,15 @@ https://apply.hotline.gg/${invite.code}
     }
 
     private async getDiscordInvite(invite: string): Promise<discordInvite> {
-        const inviteCode = invite.replace(/https:\/\/discord\.gg\//, '')
-    
-        return this.client.getInvite(inviteCode, true)
-    }
+        const inviteCode = invite.replace(/https:\/\/discord\.gg\//, '');
 
-    public async createHotlineInvite(maxUses?: number, expiresAt?: Date, applicationId?: number): Promise<hotlineInvite> {
-        const generatedCode = ApplicationService.makeId(8)
-
-        let invite             = new hotlineInvite()
-            invite.code        = generatedCode
-            invite.useMetadata = []
-
-        if (expiresAt) {
-            invite.expiresAt = expiresAt
-        } if (maxUses) {
-            invite.maxUses = maxUses
-        } if (applicationId) {
-            invite.applicationId = applicationId
-        }
-
-        return invite.save()
+        return this.client.getInvite(inviteCode, true);
     }
 
     private async closeDiscussionChannel(application: Application): Promise<void> {
-        const discussionChannel = this.client.getChannel(application.discussionChannel) as TextChannel
+        const discussionChannel = this.client.getChannel(application.discussionChannel) as TextChannel;
 
-        await discussionChannel.deletePermission(this.config.serverOwnerRole)
-        return
-    }
-
-    public async createDiscussionChannel(application: Application): Promise<TextChannel> {
-        const discussionCategory = this.client.getChannel(this.config.discussionCategory)
-        if (!discussionCategory) {
-            throw new Error('Can\'t find the discussion category')
-        }
-
-        let sanitizedName = transliteration.slugify(application.server)
-        if (sanitizedName === '') {
-            sanitizedName = application.serverId
-        }
-
-        try {
-            const discussionChannel = (await this.client.createChannel(this.config.hotlineGuildId, sanitizedName, 0, null, discussionCategory.id)) as TextChannel
-
-            application.discussionChannel = discussionChannel.id
-            await application.save()
-
-            // Create info message
-            const requester          = await this.restClient.getRESTUser(application.requestUser)
-            const invite             = await this.getDiscordInvite(application.inviteCode)
-            const informationMessage = await discussionChannel.createMessage({embed: {
-                title      : application.server,
-                description: application.reason,
-                color      : 7506394,
-                author     : {
-                    name   : `${requester.username}#${requester.discriminator}`,
-                    iconUrl: requester.avatarURL,
-                },
-                thumbnail:   {
-                    url: `https://cdn.discordapp.com/icons/${invite.guild.id}/${invite.guild.icon}.webp`,
-                },
-                fields:      [
-                    {name: 'Invite: ', value: application.inviteCode, inline: true},
-                    {name: 'Members: ', value: `${invite.presenceCount} / ${invite.memberCount}`, inline: true},
-                ],
-                footer: {
-                    text: `Application ID: ${application.id}`
-                }
-            }})
-
-            await informationMessage.pin()
-            return discussionChannel
-        } catch (err) {
-            this.logger.error(`An error has occurred while trying to create an discussion channel: %O`, err)
-            throw err
-        }
+        await discussionChannel.deletePermission(this.config.serverOwnerRole);
     }
 }
 
