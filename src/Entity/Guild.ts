@@ -31,10 +31,10 @@ export default class Guild extends BaseEntity {
     @JoinTable()
     public invites: Invite[];
 
-    @Column({type: 'simple-array'})
+    @Column({type: 'simple-json'})
     public members: string[];
 
-    @Column({type: 'simple-array'})
+    @Column({type: 'simple-json'})
     public owners: string[];
 
     @Column({type: 'bigint', nullable: true})
