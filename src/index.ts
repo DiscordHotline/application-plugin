@@ -1,3 +1,4 @@
+import * as eris from 'eris';
 import {AbstractPlugin} from 'eris-command-framework';
 import Decorator from 'eris-command-framework/Decorator';
 import {Container, inject, injectable} from 'inversify';
@@ -60,10 +61,36 @@ export default class extends AbstractPlugin {
         console.log(guild, color);
     }
 
+    @Decorator.Command('guild owner', 'Toggles a guild owner for the given guild')
+    @Decorator.Permission('guild.owner')
+    @Decorator.Types({user: eris.Member})
+    public async updateGuildOwnerCommand(guildId: string, user: eris.Member): Promise<void> {
+        const guild = await this.getRepository<Guild>(Guild).findOne(guildId);
+        if (!guild) {
+            return this.reply('Could not find a guild in the db with that id.');
+        }
+
+        const index = guild.owners.indexOf(user.id);
+        if (index >= 0) {
+            guild.owners.splice(index, 1);
+        } else {
+            guild.owners.push(user.id);
+        }
+
+        await guild.save();
+
+        return this.reactOk();
+    }
+
     @Decorator.Command('invite create', 'Creates an invite')
     @Decorator.Permission('invite.create')
-    public async createInviteCommand(maxUses: number): Promise<void> {
-        const invite = await this.appService.createHotlineInvite(maxUses);
+    public async createInviteCommand(guildId: string, maxUses: number): Promise<void> {
+        const guild = await this.getRepository<Guild>(Guild).findOne(guildId);
+        if (!guild) {
+            return this.reply('Could not find a guild in the db with that id.');
+        }
+
+        const invite = await this.appService.createHotlineInvite(maxUses, null, guild);
 
         await this.reply(`https://apply.hotline.gg/${invite.code}`);
     }
@@ -71,7 +98,7 @@ export default class extends AbstractPlugin {
     @Decorator.Command('invite revoke', 'Revokes an invite')
     @Decorator.Permission('invite.revoke')
     public async revokeInviteCommand(inviteCode: string): Promise<void> {
-        const invite = await HotlineInvite.findOne({code: inviteCode});
+        const invite = await this.getRepository<HotlineInvite>(HotlineInvite).findOne({code: inviteCode});
 
         if (!invite) {
             await this.reply('Unknown invite');

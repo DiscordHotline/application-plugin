@@ -14,7 +14,7 @@ export default class Invite extends BaseEntity {
     @CreateDateColumn({type: 'timestamp', name: 'createdAt'})
     public createdAt: Date;
 
-    @ManyToOne((_type) => Guild, (guild) => guild.invites)
+    @ManyToOne((_type) => Guild, (guild) => guild.invites, {eager: true})
     public guild: Guild;
 
     @Column({type: 'datetime', name: 'expiresAt', nullable: true})
