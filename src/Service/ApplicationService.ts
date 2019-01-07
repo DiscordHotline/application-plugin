@@ -197,7 +197,7 @@ export default class ApplicationService {
                 name:        application.server.replace(/[\W_\s]+/g, ''),
                 permissions: 0,
             });
-            application.serverRoleId = role.id;
+            application.guild.roleId = role.id;
 
             replyEmbed = {
                 embed: {
