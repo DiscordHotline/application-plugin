@@ -24,10 +24,10 @@ export default class Guild extends BaseEntity {
     @CreateDateColumn({type: 'timestamp', name: 'createdAt'})
     public createdAt: Date;
 
-    @OneToOne((_type) => Application, (application) => application.guild, {eager: true})
+    @OneToOne((_type) => Application, (application) => application.guild)
     public application?: Application | null;
 
-    @OneToMany((_type) => Invite, (invite) => invite.guild, {eager: true})
+    @OneToMany((_type) => Invite, (invite) => invite.guild)
     @JoinTable()
     public invites: Invite[];
 
