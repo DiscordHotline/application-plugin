@@ -75,12 +75,12 @@ export default class ApplicationVoteListener {
         const applications: Application[] = await this.repo.find();
         for (const application of applications) {
             if (application.voteApproved === ApprovalType.AWAITING) {
-                continue
+                continue;
             }
 
             try {
                 const [channelId, messageId] = application.voteMessageId.split(':');
-                const message: Message = await this.client.getMessage(channelId, messageId);
+                const message: Message       = await this.client.getMessage(channelId, messageId);
                 if (null === message) {
                     throw new Error('Message not found');
                 }
@@ -103,19 +103,20 @@ export default class ApplicationVoteListener {
         message: Message,
         application: Application,
     ): Promise<void> {
-        const reactions      = message.reactions;
-        const { votePassed } = application;
-        const reactionKeys   = Object.keys(reactions);
-        const passEmote      = votePassed === ApprovalType.APPROVED ? '✅' : '❌'
-        
+        const reactions    = message.reactions;
+        const {votePassed} = application;
+        const reactionKeys = Object.keys(reactions);
+        const passEmote    = votePassed === ApprovalType.APPROVED ? '✅' : '❌';
+
         if (votePassed === ApprovalType.AWAITING) {
             if (reactionKeys.length === 0) {
                 try {
                     await message.addReaction('✅');
                     await message.addReaction('❌');
                 } catch (err) {
-                    this.logger.error('An issue has occurred while trying to add initial vote reactions: %O', err)
-                    return
+                    this.logger.error('An issue has occurred while trying to add initial vote reactions: %O', err);
+
+                    return;
                 }
             }
 
@@ -123,7 +124,7 @@ export default class ApplicationVoteListener {
             votes.entries   = {...application.votes.entries, ...votes.entries};
             votes.approvals = 0;
             votes.denies    = 0;
-    
+
             application.votes = votes;
             await application.save();
 
@@ -131,7 +132,7 @@ export default class ApplicationVoteListener {
             const currentVotes = await this.appService.countVotes(application);
 
             if (!embed.fields[2]) {
-                embed.fields[2] = { name: 'Votes', inline: true}
+                embed.fields[2] = {name: 'Votes', inline: true};
             }
 
             embed.fields[2].value = Object.keys(currentVotes.entries).length.toString();
@@ -152,24 +153,24 @@ export default class ApplicationVoteListener {
             await message.addReaction(passEmote);
         } else {
             try {
-                await this.removeExcessReactions('👌', message)
+                await this.removeExcessReactions('👌', message);
                 await this.removeExcessReactions(passEmote, message);
             } catch (err) {
-                this.logger.error('An issue occurred while checking and removing excess reactions: %O', err)
+                this.logger.error('An issue occurred while checking and removing excess reactions: %O', err);
             }
         }
     }
 
-    private async removeExcessReactions (emote: string, message: Message) {
-        const reactionCounts = message.reactions
+    private async removeExcessReactions(emote: string, message: Message) {
+        const reactionCounts = message.reactions;
 
         if (reactionCounts[emote].count > 1) {
-            const allReactions = await this.client.getMessageReaction(message.channel.id, message.id, emote)
-            const toRemove = allReactions.filter(user => user.id !== this.client.user.id)
+            const allReactions = await this.client.getMessageReaction(message.channel.id, message.id, emote);
+            const toRemove     = allReactions.filter((user) => user.id !== this.client.user.id);
 
             toRemove.forEach(async (member) => {
-               await message.removeReaction(emote, member.id)
-            })
+                await message.removeReaction(emote, member.id);
+            });
         }
     }
 }

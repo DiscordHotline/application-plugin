@@ -60,7 +60,10 @@ export default class ApplicationApprovalListener {
     }
 
     private async onMessageCreate(approvalMessage: Message): Promise<void> {
-        if (!approvalMessage.channel || !this.approvalChannel || approvalMessage.channel.id !== this.approvalChannel.id) {
+        if (!approvalMessage.channel
+            || !this.approvalChannel
+            || approvalMessage.channel.id
+            !== this.approvalChannel.id) {
             return;
         }
         setTimeout(
@@ -174,7 +177,7 @@ export default class ApplicationApprovalListener {
         }
 
         if (approved === ApprovalType.AWAITING) {
-            this.logger.info('Approval vote is still awaiting for "%s"', application.server);
+            this.logger.info('Approval vote is still awaiting for "%s"', application.guild.name);
 
             return false;
         }
@@ -183,27 +186,29 @@ export default class ApplicationApprovalListener {
         application.voteApproved = approved;
         await application.save();
 
-        
         if (approved === ApprovalType.DENIED) {
-            this.logger.info('Approval vote has been denied for "%s"', application.server);
+            this.logger.info('Approval vote has been denied for "%s"', application.guild.name);
 
             // Attempt notifying the requestee that their application has been denied
             try {
                 const requester = await this.client.users.get(application.requestUser);
                 const dm        = await requester.getDMChannel();
-                await dm.createMessage({content: `Your application for ${application.server} has been denied`});
+                await dm.createMessage({content: `Your application for ${application.guild.name} has been denied`});
             } catch (err) {
-                this.logger.warn('Failed to send a notification to the requestee that their application got denied: %j', err)
+                this.logger.warn(
+                    'Failed to send a notification to the requestee that their application got denied: %j',
+                    err,
+                );
             }
 
             return true;
         }
 
-        this.logger.info('Approval vote has been approved for "%s"', application.server);
+        this.logger.info('Approval vote has been approved for "%s"', application.guild.name);
 
-        const voteMessage                   = await this.appService.postApplicationMessage(application, false);
-              application.voteMessageId     = voteMessage.channel.id + ':' + voteMessage.id;
-              application.discussionChannel = (await this.appService.createDiscussionChannel(application)).id
+        const voteMessage             = await this.appService.postApplicationMessage(application, false);
+        application.voteMessageId     = voteMessage.channel.id + ':' + voteMessage.id;
+        application.discussionChannel = (await this.appService.createDiscussionChannel(application)).id;
 
         await application.save();
         await sleep(500);
