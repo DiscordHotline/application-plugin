@@ -53,6 +53,9 @@ export default class extends AbstractPlugin {
         await this.appService.initialize();
         await this.applicationListener.initialize();
         await this.voteListener.initialize();
+
+        this.client.on('ready', () => this.leaveBadGuilds());
+        this.client.on('guildCreate', () => this.leaveBadGuilds());
     }
 
     @Decorator.Command('color', 'Updates a role color', 'Updates the role color for the given guild.')
@@ -167,5 +170,25 @@ export default class extends AbstractPlugin {
             x.fields = fields;
             x.title  = `Current Results: ${approvals} - ${denies}`;
         });
+    }
+
+    /**
+     * Leave all guilds we don't have DB records for.
+     */
+    private async leaveBadGuilds(): Promise<void> {
+        const guilds = await this.getRepository<Guild>(Guild).find();
+
+        this.logger.info(`Current a member of ${this.client.guilds.size - 1} guilds, with ${guilds.length} in the db.`);
+        for (const guild of this.client.guilds.values()) {
+            if (guild.id === '204100839806205953') {
+                continue;
+            }
+
+            const hasGuild = guilds.findIndex((x) => x.id === guild.id) >= 0;
+            if (!hasGuild) {
+                this.logger.info('Found a bad guild. Leaving: %s - %s', guild.name, guild.id);
+                await guild.leave();
+            }
+        }
     }
 };
