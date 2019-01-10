@@ -1,7 +1,9 @@
 import * as eris from 'eris';
+import {Member, Role} from 'eris';
 import {AbstractPlugin} from 'eris-command-framework';
 import Decorator from 'eris-command-framework/Decorator';
 import {Container, inject, injectable} from 'inversify';
+import {In} from 'typeorm';
 
 import {Application, Guild, Invite as HotlineInvite} from './Entity';
 import {ApprovalType, VoteType} from './Entity/Application';
@@ -23,7 +25,7 @@ export const Entities = {Application, Guild, Invite: HotlineInvite};
 export {ApprovalType, VoteType} from './Entity/Application';
 
 @injectable()
-export default class extends AbstractPlugin {
+export default class Plugin extends AbstractPlugin {
     public static Config: Config;
 
     public static addToContainer(container: Container): void {
@@ -56,6 +58,9 @@ export default class extends AbstractPlugin {
 
         this.client.on('ready', () => this.leaveBadGuilds());
         this.client.on('guildCreate', () => this.leaveBadGuilds());
+        this.client.on('guildMemberAdd', this.onGuildMemberChange.bind(this, false));
+        this.client.on('guildMemberRemove', this.onGuildMemberChange.bind(this, false));
+        this.client.on('guildMemberUpdate', this.onGuildMemberChange.bind(this, false));
     }
 
     @Decorator.Command('color', 'Updates a role color', 'Updates the role color for the given guild.')
@@ -172,19 +177,117 @@ export default class extends AbstractPlugin {
         });
     }
 
+    @Decorator.Command('claim', 'Claim a server')
+    @Decorator.Permission('claim')
+    public async ClaimCommand(inviteUrl: string): Promise<void> {
+        await this.context.message.delete();
+
+        const repo   = this.getRepository<Guild>(Guild);
+        const re     = /https:\/\/discord.gg\//;
+        const invite = await this.client.getInvite(inviteUrl.replace(re, ''));
+        if (!invite) {
+            return this.reply('That doesn\'t look like a valid invite url/code.');
+        }
+
+        const guild = await repo.findOne({guildId: invite.guild.id});
+        if (!guild) {
+            console.log(invite);
+
+            return this.reply('There was an error. Bug someone on Staff.');
+        }
+
+        if (!guild.inviteCode) {
+            guild.inviteCode = invite.code;
+        }
+
+        guild.owners.push(this.context.member.id);
+        guild.owners = [...new Set(guild.owners)];
+        await repo.save(guild);
+
+        return this.reply(this.context.member.mention + ' has claimed ' + invite.guild.name);
+    }
+
+    private async onGuildMemberChange(removed: boolean, guild: eris.Guild, member: Member): Promise<void> {
+        if (guild.id !== Plugin.Config.hotlineGuildId) {
+            return;
+        }
+
+        // Wait 5 seconds, then update roles
+        setTimeout(this.updateMemberRoles.bind(this, member, removed), 5 * 1000);
+    }
+
+    private async updateMemberRoles(member: Member, removed = false) {
+        const repo = this.getRepository<Guild>(Guild);
+
+        const guilds = [];
+        if (!removed) {
+            for (const roleId of member.roles.values()) {
+                const role = member.guild.roles.get(roleId);
+                if (this.isServerRole(role)) {
+                    const guild = await repo.findOne({roleId: role.id});
+                    guild.members.push(member.id);
+                    guild.members = [...new Set(guild.members)];
+                    guilds.push(guild);
+                }
+            }
+        }
+
+        const results = await repo.find({members: In([member.id])});
+        for (const guild of results) {
+            if (removed || member.roles.indexOf(guild.roleId) === -1) {
+                guild.members.splice(guild.members.indexOf(member.id), 1);
+                guilds.push(guild);
+            }
+        }
+
+        await repo.save(guilds);
+    }
+
+    private isServerRole(role: Role): boolean {
+        const divider = role.guild.roles.get('204103172682153984'); // --Community Tags-- / Divider role
+
+        return role.position < divider.position;
+    }
+
     /**
      * Leave all guilds we don't have DB records for.
      */
     private async leaveBadGuilds(): Promise<void> {
-        const guilds = await this.getRepository<Guild>(Guild).find();
+        const guilds  = await this.getRepository<Guild>(Guild).find();
+        const hotline = this.client.guilds.get(Plugin.Config.hotlineGuildId);
 
-        this.logger.info(`Current a member of ${this.client.guilds.size - 1} guilds, with ${guilds.length} in the db.`);
-        for (const guild of this.client.guilds.values()) {
-            if (guild.id === '204100839806205953') {
+        const entities = [];
+        for (const role of hotline.roles.values()) {
+            if (role.position >= 102) {
                 continue;
             }
 
-            const hasGuild = guilds.findIndex((x) => x.id === guild.id) >= 0;
+            const index   = guilds.findIndex((g) => g.roleId === role.id);
+            const members = hotline.members.filter((x) => x.roles.indexOf(role.id) >= 0).map((x) => x.id);
+            if (index === -1) {
+                const guild     = new Guild();
+                guild.roleId    = role.id;
+                guild.createdAt = new Date();
+                guild.members   = members;
+                guild.owners    = [];
+                guild.name      = role.name;
+
+                entities.push(guild);
+                guilds.push(guild);
+            } else {
+                guilds[index].members = members;
+                entities.push(guilds[index]);
+            }
+        }
+        await this.getRepository(Guild).save(entities);
+
+        this.logger.info(`Current a member of ${this.client.guilds.size - 1} guilds, with ${guilds.length} in the db.`);
+        for (const guild of this.client.guilds.values()) {
+            if (guild.id === Plugin.Config.hotlineGuildId) {
+                continue;
+            }
+
+            const hasGuild = guilds.findIndex((x) => x.guildId === guild.id) >= 0;
             if (!hasGuild) {
                 this.logger.info('Found a bad guild. Leaving: %s - %s', guild.name, guild.id);
                 await guild.leave();

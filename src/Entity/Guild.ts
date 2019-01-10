@@ -6,23 +6,24 @@ import {
     JoinTable,
     OneToMany,
     OneToOne,
-    PrimaryColumn,
+    PrimaryGeneratedColumn,
 } from 'typeorm';
 import Application from './Application';
 import Invite from './Invite';
 
-export interface UseMetadata {
-    user: string;
-    usedAt: Date;
-}
-
 @Entity({name: 'guild'})
 export default class Guild extends BaseEntity {
-    @PrimaryColumn({type: 'bigint'})
-    public id: string;
+    @PrimaryGeneratedColumn()
+    public id: number;
 
-    @Column({type: 'varchar', name: 'name', length: 255})
+    @Column({type: 'bigint', nullable: true, unique: true})
+    public guildId?: string | null;
+
+    @Column({type: 'varchar', name: 'name', length: 255, unique: true})
     public name: string;
+
+    @Column({type: 'varchar', name: 'inviteCode', length: 255, nullable: true})
+    public inviteCode: string;
 
     @CreateDateColumn({type: 'timestamp', name: 'createdAt'})
     public createdAt: Date;
@@ -40,6 +41,6 @@ export default class Guild extends BaseEntity {
     @Column({type: 'simple-json'})
     public owners: string[];
 
-    @Column({type: 'bigint', nullable: true})
+    @Column({type: 'bigint', nullable: true, unique: true})
     public roleId?: string | null;
 }
