@@ -179,7 +179,8 @@ export default class Plugin extends AbstractPlugin {
 
     @Decorator.Command('claim', 'Claim a server')
     @Decorator.Permission('claim')
-    public async ClaimCommand(inviteUrl: string): Promise<void> {
+    @Decorator.Types({role: Role})
+    public async ClaimCommand(inviteUrl: string, role: Role): Promise<void> {
         await this.context.message.delete();
 
         const repo   = this.getRepository<Guild>(Guild);
@@ -189,7 +190,7 @@ export default class Plugin extends AbstractPlugin {
             return this.reply('That doesn\'t look like a valid invite url/code.');
         }
 
-        const guild = await repo.findOne({guildId: invite.guild.id});
+        const guild = await repo.findOne({roleId: role.id});
         if (!guild) {
             console.log(invite);
 
