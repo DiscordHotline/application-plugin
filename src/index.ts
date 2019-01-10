@@ -248,7 +248,7 @@ export default class Plugin extends AbstractPlugin {
     private isServerRole(role: Role): boolean {
         const divider = role.guild.roles.get('204103172682153984'); // --Community Tags-- / Divider role
 
-        return role.position < divider.position;
+        return role.position < divider.position && role.id !== role.guild.id;
     }
 
     /**
