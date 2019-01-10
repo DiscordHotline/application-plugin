@@ -200,6 +200,7 @@ export default class Plugin extends AbstractPlugin {
             guild.inviteCode = invite.code;
         }
 
+        guild.guildId = invite.guild.id;
         guild.owners.push(this.context.member.id);
         guild.owners = [...new Set(guild.owners)];
         await repo.save(guild);
