@@ -428,7 +428,7 @@ https://apply.hotline.gg/${invite.code}
 
         let sanitizedName = transliteration.slugify(application.guild.name);
         if (sanitizedName === '') {
-            sanitizedName = application.guild.id;
+            sanitizedName = application.guild.guildId;
         }
 
         try {
