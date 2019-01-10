@@ -180,7 +180,7 @@ export default class Plugin extends AbstractPlugin {
     @Decorator.Command('claim', 'Claim a server')
     @Decorator.Permission('claim')
     @Decorator.Types({role: Role})
-    public async ClaimCommand(inviteUrl: string, role: Role): Promise<void> {
+    public async ClaimCommand(inviteUrl: string, @Decorator.Remainder() role: Role): Promise<void> {
         await this.context.message.delete();
 
         const repo   = this.getRepository<Guild>(Guild);
