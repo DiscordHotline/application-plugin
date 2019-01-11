@@ -35,7 +35,6 @@
         "no-var-requires":          false,
         "interface-name":           false,
         "newline-before-return":    true,
-        "declaration":              true,
         "typedef":                  true,
         "no-bitwise":               false
     },

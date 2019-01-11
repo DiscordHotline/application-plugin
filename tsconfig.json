@@ -4,7 +4,6 @@
         "target":                       "es2017",
         "module":                       "commonjs",
         "jsx":                          "preserve",
-        "allowJs":                      true,
         "moduleResolution":             "node",
         "allowSyntheticDefaultImports": true,
         "noUnusedLocals":               true,
