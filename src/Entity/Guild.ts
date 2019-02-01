@@ -13,7 +13,7 @@ import Invite from './Invite';
 
 @Entity({name: 'guild'})
 export default class Guild extends BaseEntity {
-    @PrimaryGeneratedColumn()
+    @PrimaryGeneratedColumn({name: 'id'})
     public id: number;
 
     @Column({type: 'bigint', nullable: true, unique: true})
