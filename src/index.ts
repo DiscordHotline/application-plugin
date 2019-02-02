@@ -1,5 +1,4 @@
-import * as eris from 'eris';
-import {Member, Role} from 'eris';
+import {Member, Role, Invite as discordInvite} from 'eris';
 import {AbstractPlugin} from 'eris-command-framework';
 import Decorator from 'eris-command-framework/Decorator';
 import {Container, inject, injectable} from 'inversify';
@@ -185,12 +184,16 @@ export default class Plugin extends AbstractPlugin {
 
         const repo   = this.getRepository<Guild>(Guild);
         const re     = /https:\/\/discord.gg\//;
-        let invite;
-        
+        let invite: discordInvite;
+
         try {
             invite = await this.client.getInvite(inviteUrl.replace(re, ''));
         } catch (error) {
-            return this.reply('That doesn\'t look like a valid permanent invite url/code.');
+            return this.reply('An issue occured while trying to fetch your invite. Make sure it\'s correct.');
+        }
+
+        if (invite.temporary) {
+            return this.reply('Your invite is not permanent.')
         }
 
         const guild = await repo.findOne({roleId: role.id});
