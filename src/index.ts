@@ -1,3 +1,4 @@
+import * as eris from 'eris';
 import {Member, Role, Invite as discordInvite} from 'eris';
 import {AbstractPlugin} from 'eris-command-framework';
 import Decorator from 'eris-command-framework/Decorator';
@@ -185,7 +186,7 @@ export default class Plugin extends AbstractPlugin {
         const repo   = this.getRepository<Guild>(Guild);
         const re     = /https:\/\/discord.gg\//;
         let invite: discordInvite;
-
+        
         try {
             invite = await this.client.getInvite(inviteUrl.replace(re, ''));
         } catch (error) {
