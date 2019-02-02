@@ -185,8 +185,11 @@ export default class Plugin extends AbstractPlugin {
 
         const repo   = this.getRepository<Guild>(Guild);
         const re     = /https:\/\/discord.gg\//;
-        const invite = await this.client.getInvite(inviteUrl.replace(re, ''));
-        if (!invite || invite.temporary) {
+        let invite;
+        
+        try {
+            invite = await this.client.getInvite(inviteUrl.replace(re, ''));
+        } catch (error) {
             return this.reply('That doesn\'t look like a valid permanent invite url/code.');
         }
 
