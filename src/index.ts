@@ -66,8 +66,6 @@ export default class Plugin extends AbstractPlugin {
     @Decorator.Command('color', 'Updates a role color', 'Updates the role color for the given guild.')
     @Decorator.Permission('color.update')
     public async updateColorCommand(guild: string, color: string): Promise<void> {
-        console.log(guild, color);
-        
         return this.reply('The color command isn\'t implemented yet.');
     }
 
