@@ -71,6 +71,12 @@ export default class Plugin extends AbstractPlugin {
         return this.reply('The color command isn\'t implemented yet.');
     }
 
+    @Decorator.Command('list update', 'Updates the servers list')
+    @Decorator.Permission('list.update')
+    public async updateGuildList(): Promise<void> {
+        await this.appService.updateServerList()
+    }
+
     @Decorator.Command('guild owner', 'Toggles a guild owner for the given guild')
     @Decorator.Permission('guild.owner')
     @Decorator.Types({user: eris.Member})
