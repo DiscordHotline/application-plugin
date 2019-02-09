@@ -218,6 +218,7 @@ export default class ApplicationService {
             application.guild.roleId = role.id;
 
             await this.sortRoles();
+            await this.updateServerList();
 
             const applicantMember = guild.members.get(application.requestUser)
             const serverOwnerRole = guild.roles.get('287139107199516672')
@@ -535,6 +536,60 @@ https://apply.hotline.gg/${invite.code}
         const discussionChannel = this.client.getChannel(application.discussionChannel) as TextChannel;
 
         await discussionChannel.deletePermission(this.config.serverOwnerRole);
+    }
+
+    public async updateServerList(): Promise<void> {
+        const serverListChannel = this.client.getChannel(this.config.serverListChannel) as TextChannel
+
+        if (!serverListChannel) {
+            return
+        }
+
+        const hotline     = this.client.guilds.get(this.config.hotlineGuildId)
+        const dividerPos  = hotline.roles.get(this.config.dividerRole).position
+        const serverRoles = hotline.roles.filter(role => role.position < dividerPos && role.id !== hotline.id)
+        let listParts = []
+        serverRoles.sort((a, b) => {
+            return a.name.localeCompare(b.name)
+        })
+
+        // This can probably be improved
+        for (const role of serverRoles) {
+            const partsCount = listParts.length
+
+            if (listParts.length === 0) {
+                listParts[0] = `<@&${role.id}>\n`
+                continue
+            }
+
+            if (listParts[partsCount - 1].length >= 1900) {
+                listParts[partsCount] = `<@&${role.id}>\n`
+                continue
+            }
+
+            listParts[partsCount - 1] += `<@&${role.id}>\n`
+        }
+        const existingMessages = await serverListChannel.getMessages()
+        for (let i = 0; i < listParts.length; i++) {
+            const listPart        = listParts[i]
+            const existingMessage = existingMessages[i]
+
+            if (!existingMessage) {
+                await serverListChannel.createMessage({
+                    embed: {
+                        description: listPart,
+                        color: 3447003
+                    }
+                })
+            } else {
+                existingMessage.edit({
+                    embed: {
+                        description: listPart,
+                        color: 3447003
+                    }
+                })
+            }
+        }
     }
 }
 
