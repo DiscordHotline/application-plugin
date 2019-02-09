@@ -248,6 +248,7 @@ export default class Plugin extends AbstractPlugin {
             }
         }
 
+        // @ts-ignore
         const results = await repo.find({members: In([member.id])});
         for (const guild of results) {
             if (removed || member.roles.indexOf(guild.roleId) === -1) {
@@ -280,7 +281,12 @@ export default class Plugin extends AbstractPlugin {
             const hasGuild = guilds.findIndex((x) => x.guildId === guild.id) >= 0;
             if (!hasGuild) {
                 this.logger.info('Found a bad guild. Leaving: %s - %s', guild.name, guild.id);
-                await guild.leave();
+                const notificationChannel = this.client.getChannel('526158510279360532') as eris.TextChannel
+
+                if (notificationChannel) {
+                    await notificationChannel.createMessage(`Found a bad guild: \`${guild.name} - ${guild.id}\``)
+                }
+                // await guild.leave();
             }
         }
     }
