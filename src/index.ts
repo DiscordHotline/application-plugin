@@ -120,6 +120,13 @@ export default class Plugin extends AbstractPlugin {
         await this.reply(`Successfully revoked invite ${inviteCode}`);
     }
 
+    @Decorator.Command('roles sort', 'Approves an application')
+    @Decorator.Permission('role.sort')
+    public async SortRoles(): Promise<void> {
+        await this.appService.sortRoles();
+        await this.reactOk();
+    }
+
     @Decorator.Command('app approve', 'Approves an application')
     @Decorator.Permission('application.approve')
     public async ApproveCommand(id: number): Promise<void> {
