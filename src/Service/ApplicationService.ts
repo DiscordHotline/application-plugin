@@ -182,6 +182,24 @@ export default class ApplicationService {
         }
     }
 
+    public async sortRoles(): Promise<void> {
+        const guild      = this.client.guilds.get(this.config.hotlineGuildId);
+        const dividerPos = guild.roles.get('204103172682153984').position; // --Community Tags-- / Divider role
+        
+        // Grab all the roles below the divider, that aren't the @everyone role
+        const toSort     = guild.roles.filter(role => role.position < dividerPos && role.id !== guild.id);
+
+        // Sort role names in descending order (to make indexes align with role positions)
+        toSort.sort((a, b) => b.name.toLowerCase().localeCompare(a.name.toLowerCase()));
+
+        for (const role of toSort) {
+            if (role.position !== toSort.indexOf(role) + 1) {
+                // Edit the position of the role's position doesn't match the sorted array's index
+                await role.editPosition(toSort.indexOf(role) + 1);
+            }
+        }
+    }
+
     public async approveOrDeny(application: Application, approved: ApprovalType): Promise<void> {
         const votes     = application.votes;
         const requester = await this.client.users.get(application.requestUser);
@@ -198,6 +216,8 @@ export default class ApplicationService {
                 permissions: 0,
             });
             application.guild.roleId = role.id;
+
+            await this.sortRoles();
 
             replyEmbed = {
                 embed: {
