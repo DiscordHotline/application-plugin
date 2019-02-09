@@ -18,7 +18,7 @@ script:
     - npm run build
 
 after_success:
-    - npm i -g semantic-release@15 @semantic-release/npm @semantic-release/changelog @semantic-release/changelog @semantic-release/commit-analyzer @semantic-release/release-notes-generator
+    - npm i -g semantic-release@15 @semantic-release/npm @semantic-release/changelog @semantic-release/git @semantic-release/changelog @semantic-release/commit-analyzer @semantic-release/release-notes-generator
     - npx semantic-release -e @semantic-release/npm
     - wget https://raw.githubusercontent.com/DiscordHooks/travis-ci-discord-webhook/master/send.sh
     - chmod +x send.sh
