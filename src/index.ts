@@ -270,32 +270,6 @@ export default class Plugin extends AbstractPlugin {
      */
     private async leaveBadGuilds(): Promise<void> {
         const guilds  = await this.getRepository<Guild>(Guild).find();
-        const hotline = this.client.guilds.get(Plugin.Config.hotlineGuildId);
-
-        const entities = [];
-        for (const role of hotline.roles.values()) {
-            if (role.position >= 102) {
-                continue;
-            }
-
-            const index   = guilds.findIndex((g) => g.roleId === role.id);
-            const members = hotline.members.filter((x) => x.roles.indexOf(role.id) >= 0).map((x) => x.id);
-            if (index === -1) {
-                const guild     = new Guild();
-                guild.roleId    = role.id;
-                guild.createdAt = new Date();
-                guild.members   = members;
-                guild.owners    = [];
-                guild.name      = role.name;
-
-                entities.push(guild);
-                guilds.push(guild);
-            } else {
-                guilds[index].members = members;
-                entities.push(guilds[index]);
-            }
-        }
-        await this.getRepository(Guild).save(entities);
 
         this.logger.info(`Current a member of ${this.client.guilds.size - 1} guilds, with ${guilds.length} in the db.`);
         for (const guild of this.client.guilds.values()) {
