@@ -13,12 +13,14 @@ import ApplicationService from './Service/ApplicationService';
 import Types from './types';
 
 export interface Config {
-    hotlineGuildId: string;
-    approvalChannel: string;
-    voteChannel: string;
+    hotlineGuildId    : string;
+    approvalChannel   : string;
+    voteChannel       : string;
     discussionCategory: string;
-    inviteChannel: string;
-    serverOwnerRole: string;
+    inviteChannel     : string;
+    serverOwnerRole   : string;
+    serverListChannel : string;
+    dividerRole       : string
 }
 
 export const Entities = {Application, Guild, Invite: HotlineInvite};
