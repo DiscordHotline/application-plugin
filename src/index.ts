@@ -248,6 +248,7 @@ export default class Plugin extends AbstractPlugin {
             }
         }
 
+        // @ts-ignore
         const results = await repo.find({members: In([member.id])});
         for (const guild of results) {
             if (removed || member.roles.indexOf(guild.roleId) === -1) {
@@ -270,32 +271,6 @@ export default class Plugin extends AbstractPlugin {
      */
     private async leaveBadGuilds(): Promise<void> {
         const guilds  = await this.getRepository<Guild>(Guild).find();
-        const hotline = this.client.guilds.get(Plugin.Config.hotlineGuildId);
-
-        const entities = [];
-        for (const role of hotline.roles.values()) {
-            if (role.position >= 102) {
-                continue;
-            }
-
-            const index   = guilds.findIndex((g) => g.roleId === role.id);
-            const members = hotline.members.filter((x) => x.roles.indexOf(role.id) >= 0).map((x) => x.id);
-            if (index === -1) {
-                const guild     = new Guild();
-                guild.roleId    = role.id;
-                guild.createdAt = new Date();
-                guild.members   = members;
-                guild.owners    = [];
-                guild.name      = role.name;
-
-                entities.push(guild);
-                guilds.push(guild);
-            } else {
-                guilds[index].members = members;
-                entities.push(guilds[index]);
-            }
-        }
-        await this.getRepository(Guild).save(entities);
 
         this.logger.info(`Current a member of ${this.client.guilds.size - 1} guilds, with ${guilds.length} in the db.`);
         for (const guild of this.client.guilds.values()) {
@@ -306,7 +281,12 @@ export default class Plugin extends AbstractPlugin {
             const hasGuild = guilds.findIndex((x) => x.guildId === guild.id) >= 0;
             if (!hasGuild) {
                 this.logger.info('Found a bad guild. Leaving: %s - %s', guild.name, guild.id);
-                await guild.leave();
+                const notificationChannel = this.client.getChannel('526158510279360532') as eris.TextChannel
+
+                if (notificationChannel) {
+                    await notificationChannel.createMessage(`Found a bad guild: \`${guild.name} - ${guild.id}\``)
+                }
+                // await guild.leave();
             }
         }
     }
