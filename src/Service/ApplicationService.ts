@@ -219,6 +219,19 @@ export default class ApplicationService {
 
             await this.sortRoles();
 
+            const applicantMember = guild.members.get(application.requestUser)
+            const serverOwnerRole = guild.roles.get('287139107199516672')
+            const applicantRole   = guild.roles.get('531713467619475456')
+            if (applicantMember) {
+                await applicantMember.addRole(role.id)
+
+                if (serverOwnerRole && !applicantMember.roles.includes(serverOwnerRole.id)) {
+                    await applicantMember.addRole(serverOwnerRole.id)
+                } if (applicantRole && applicantMember.roles.includes(applicantRole.id)) {
+                    await applicantMember.removeRole(applicantRole.id)
+                }
+            }
+
             replyEmbed = {
                 embed: {
                     description: `Your application for ${application.guild.name} has passed!
