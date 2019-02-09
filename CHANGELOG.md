@@ -1,3 +1,11 @@
+# [1.22.0](https://github.com/DiscordHotline/application-plugin/compare/v1.21.0...v1.22.0) (2019-02-09)
+
+
+### Features
+
+* **leaveBadGuilds:** Disabled automatic leaving for now and just send a notification instead ([1f4b522](https://github.com/DiscordHotline/application-plugin/commit/1f4b522))
+* **leaveBadGuilds:** Removed importing roles as it's not needed anymore ([b373556](https://github.com/DiscordHotline/application-plugin/commit/b373556))
+
 # [1.21.0](https://github.com/DiscordHotline/application-plugin/compare/v1.20.1...v1.21.0) (2019-02-09)
 
 
