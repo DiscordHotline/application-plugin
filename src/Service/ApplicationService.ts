@@ -8,7 +8,7 @@ import * as transliteration from 'transliteration';
 import {Connection, Repository} from 'typeorm';
 import {Logger} from 'winston';
 
-import Application, {ApprovalType, VoteResults, VoteType} from '../Entity/Application';
+import Application, {ApprovalType, VoteResults, VoteType, ApprovalColor} from '../Entity/Application';
 import Guild from '../Entity/Guild';
 import HotlineInvite from '../Entity/Invite';
 import {Config} from '../index';
@@ -70,6 +70,7 @@ export default class ApplicationService {
         const date = moment(application.insertDate);
         const diff = moment.duration(date.add(3, 'd').diff(now)).asMilliseconds();
         let timeLeft: string;
+
         if (diff < 0) {
             timeLeft = 'None';
         } else {
@@ -111,6 +112,7 @@ export default class ApplicationService {
             footer:      {
                 text: `Application ID: ${application.id} | Time Left: ${timeLeft}`,
             },
+            color: ApprovalColor[application.votePassed]
         });
 
         if (!edit) {

@@ -12,6 +12,12 @@ export enum ApprovalType {
     DENIED,
 }
 
+export const ApprovalColor = [
+    3447003,
+    65280,
+    16711680
+]
+
 export enum VoteType {
     APPROVED = 1,
     DENIED,
