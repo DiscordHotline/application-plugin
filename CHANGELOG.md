@@ -1,3 +1,10 @@
+# [1.24.0](https://github.com/DiscordHotline/application-plugin/compare/v1.23.0...v1.24.0) (2019-02-11)
+
+
+### Features
+
+* **applicationEmbed:** Added color to the embed that changes depending on the vote status ([d37262d](https://github.com/DiscordHotline/application-plugin/commit/d37262d))
+
 # [1.23.0](https://github.com/DiscordHotline/application-plugin/compare/v1.22.0...v1.23.0) (2019-02-09)
 
 
