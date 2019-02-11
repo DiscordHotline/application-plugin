@@ -1,3 +1,10 @@
+# [1.25.0](https://github.com/DiscordHotline/application-plugin/compare/v1.24.2...v1.25.0) (2019-02-11)
+
+
+### Features
+
+* **UpdateCommand:** Command to update application message ([17d5c8d](https://github.com/DiscordHotline/application-plugin/commit/17d5c8d))
+
 ## [1.24.2](https://github.com/DiscordHotline/application-plugin/compare/v1.24.1...v1.24.2) (2019-02-11)
 
 
