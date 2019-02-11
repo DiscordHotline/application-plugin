@@ -1,3 +1,10 @@
+## [1.24.1](https://github.com/DiscordHotline/application-plugin/compare/v1.24.0...v1.24.1) (2019-02-11)
+
+
+### Bug Fixes
+
+* **approve:** Fix for role id not being saved ([0ea5a55](https://github.com/DiscordHotline/application-plugin/commit/0ea5a55))
+
 # [1.24.0](https://github.com/DiscordHotline/application-plugin/compare/v1.23.0...v1.24.0) (2019-02-11)
 
 
