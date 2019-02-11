@@ -217,7 +217,9 @@ export default class ApplicationService {
                 name:        application.guild.name.replace(/[\W_\s]+/g, ''),
                 permissions: 0,
             });
+
             application.guild.roleId = role.id;
+            await application.guild.save();
 
             await this.sortRoles();
             await this.updateServerList();
