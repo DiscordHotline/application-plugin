@@ -1,3 +1,12 @@
+# [1.23.0](https://github.com/DiscordHotline/application-plugin/compare/v1.22.0...v1.23.0) (2019-02-09)
+
+
+### Features
+
+* **listUpdateCommand:** Added command to manually trigger a server list update with ([ab5b184](https://github.com/DiscordHotline/application-plugin/commit/ab5b184))
+* **pluginConfig:** Added dividerRole & serverListChannel ([d70106b](https://github.com/DiscordHotline/application-plugin/commit/d70106b))
+* **updateServerList:** Automatically update server list ([9d03f21](https://github.com/DiscordHotline/application-plugin/commit/9d03f21))
+
 # [1.22.0](https://github.com/DiscordHotline/application-plugin/compare/v1.21.0...v1.22.0) (2019-02-09)
 
 
