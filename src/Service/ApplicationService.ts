@@ -181,6 +181,7 @@ export default class ApplicationService {
 
         if (approved !== ApprovalType.AWAITING) {
             await this.approveOrDeny(application, approved);
+            await this.postApplicationMessage(application, true);
         }
     }
 
