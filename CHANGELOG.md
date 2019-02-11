@@ -1,3 +1,10 @@
+## [1.24.2](https://github.com/DiscordHotline/application-plugin/compare/v1.24.1...v1.24.2) (2019-02-11)
+
+
+### Bug Fixes
+
+* **checkApplication:** Update application message after finishing vote ([b12c59a](https://github.com/DiscordHotline/application-plugin/commit/b12c59a))
+
 ## [1.24.1](https://github.com/DiscordHotline/application-plugin/compare/v1.24.0...v1.24.1) (2019-02-11)
 
 
