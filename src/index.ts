@@ -135,6 +135,18 @@ export default class Plugin extends AbstractPlugin {
         await this.reactOk();
     }
 
+    @Decorator.Command('app update', 'Updates an application')
+    @Decorator.Permission('application.update')
+    public async UpdateCommand(id: number): Promise<void> {
+        const application = await this.getRepository<Application>(Application).findOne(id);
+        if (!application) {
+            return await this.reactNotOk();
+        }
+
+        await this.appService.postApplicationMessage(application, true);
+        await this.reactOk();
+    }
+
     @Decorator.Command('app approve', 'Approves an application')
     @Decorator.Permission('application.approve')
     public async ApproveCommand(id: number): Promise<void> {
