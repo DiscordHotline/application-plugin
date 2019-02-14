@@ -1,3 +1,15 @@
+# [1.26.0](https://github.com/DiscordHotline/application-plugin/compare/v1.25.2...v1.26.0) (2019-02-14)
+
+
+### Bug Fixes
+
+* **Errors:** Potential fix for incorrect stacktrace ([597bcab](https://github.com/DiscordHotline/application-plugin/commit/597bcab))
+
+
+### Features
+
+* **updateGuildListCommand:** Added simple ok reaction ([45c5dc8](https://github.com/DiscordHotline/application-plugin/commit/45c5dc8))
+
 ## [1.25.2](https://github.com/DiscordHotline/application-plugin/compare/v1.25.1...v1.25.2) (2019-02-14)
 
 
