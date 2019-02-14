@@ -1,3 +1,4 @@
+import 'source-map-support/register';
 import * as eris from 'eris';
 import {Member, Role, Invite as discordInvite} from 'eris';
 import {AbstractPlugin} from 'eris-command-framework';
