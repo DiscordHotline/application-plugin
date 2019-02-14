@@ -181,7 +181,6 @@ export default class ApplicationService {
 
         if (approved !== ApprovalType.AWAITING) {
             await this.approveOrDeny(application, approved);
-            await this.postApplicationMessage(application, true);
         }
     }
 
@@ -283,6 +282,7 @@ https://apply.hotline.gg/${invite.code}
         }
         await application.save();
         await sleep(1000);
+        await this.postApplicationMessage(application, true);
 
         if (application.discussionChannel) {
             await this.closeDiscussionChannel(application);
