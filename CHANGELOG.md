@@ -1,3 +1,10 @@
+## [1.25.2](https://github.com/DiscordHotline/application-plugin/compare/v1.25.1...v1.25.2) (2019-02-14)
+
+
+### Bug Fixes
+
+* **updateServerList:** Sort existing messages by date ([f091b0f](https://github.com/DiscordHotline/application-plugin/commit/f091b0f))
+
 ## [1.25.1](https://github.com/DiscordHotline/application-plugin/compare/v1.25.0...v1.25.1) (2019-02-14)
 
 
