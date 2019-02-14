@@ -75,6 +75,7 @@ export default class Plugin extends AbstractPlugin {
     @Decorator.Permission('list.update')
     public async updateGuildList(): Promise<void> {
         await this.appService.updateServerList()
+        await this.reactOk()
     }
 
     @Decorator.Command('guild owner', 'Toggles a guild owner for the given guild')
