@@ -561,41 +561,38 @@ https://apply.hotline.gg/${invite.code}
         // This can probably be improved
         for (const role of serverRoles) {
             const partsCount = listParts.length
+            const roleMention = `<@&${role.id}>\n`
 
             if (listParts.length === 0) {
-                listParts[0] = `<@&${role.id}>\n`
+                listParts[0] = roleMention
                 continue
             }
 
             if (listParts[partsCount - 1].length >= 1900) {
-                listParts[partsCount] = `<@&${role.id}>\n`
+                listParts[partsCount] = roleMention
                 continue
             }
 
-            listParts[partsCount - 1] += `<@&${role.id}>\n`
+            listParts[partsCount - 1] += roleMention
         }
-        
+
         const existingMessages = await serverListChannel.getMessages()
         existingMessages.sort((a, b) => a.timestamp - b.timestamp)
 
         for (let i = 0; i < listParts.length; i++) {
             const listPart        = listParts[i]
             const existingMessage = existingMessages[i]
+            const messageEmbed = {
+                embed: {
+                    description: listPart,
+                    color: 3447003
+                }
+            }
 
             if (!existingMessage) {
-                await serverListChannel.createMessage({
-                    embed: {
-                        description: listPart,
-                        color: 3447003
-                    }
-                })
+                await serverListChannel.createMessage(messageEmbed)
             } else {
-                existingMessage.edit({
-                    embed: {
-                        description: listPart,
-                        color: 3447003
-                    }
-                })
+                existingMessage.edit(messageEmbed)
             }
         }
     }
