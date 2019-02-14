@@ -574,7 +574,10 @@ https://apply.hotline.gg/${invite.code}
 
             listParts[partsCount - 1] += `<@&${role.id}>\n`
         }
+        
         const existingMessages = await serverListChannel.getMessages()
+        existingMessages.sort((a, b) => a.timestamp - b.timestamp)
+
         for (let i = 0; i < listParts.length; i++) {
             const listPart        = listParts[i]
             const existingMessage = existingMessages[i]
