@@ -1,3 +1,10 @@
+## [1.25.1](https://github.com/DiscordHotline/application-plugin/compare/v1.25.0...v1.25.1) (2019-02-14)
+
+
+### Bug Fixes
+
+* **approve/deny:** Moved app msg update to approveOrDeny function ([fee06fe](https://github.com/DiscordHotline/application-plugin/commit/fee06fe))
+
 # [1.25.0](https://github.com/DiscordHotline/application-plugin/compare/v1.24.2...v1.25.0) (2019-02-11)
 
 
