@@ -306,7 +306,7 @@ export default class Plugin extends AbstractPlugin {
                 const notificationChannel = this.client.getChannel('526158510279360532') as eris.TextChannel
 
                 if (notificationChannel) {
-                    await notificationChannel.createMessage(`Found a bad guild: \`${guild.name} - ${guild.id}\``)
+                    await notificationChannel.createMessage(`Found a bad guild: \`${guild.name} - ${guild.id}\`. Owner is <@${guild.ownerID}>`)
                 }
                 // await guild.leave();
             }
