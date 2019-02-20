@@ -1,3 +1,10 @@
+# [1.27.0](https://github.com/DiscordHotline/application-plugin/compare/v1.26.0...v1.27.0) (2019-02-20)
+
+
+### Features
+
+* **leaveBadGuilds:** Add server owner to notification ([df687ee](https://github.com/DiscordHotline/application-plugin/commit/df687ee))
+
 # [1.26.0](https://github.com/DiscordHotline/application-plugin/compare/v1.25.2...v1.26.0) (2019-02-14)
 
 
