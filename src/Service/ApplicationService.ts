@@ -225,12 +225,17 @@ export default class ApplicationService {
             await this.updateServerList();
 
             const applicantMember = guild.members.get(application.requestUser)
-            const serverOwnerRole = guild.roles.get('287139107199516672')
-            const applicantRole   = guild.roles.get('531713467619475456')
+            const guildRoles      = guild.roles
+            const memberRole      = guildRoles.get('531617261077790720')
+            const serverOwnerRole = guildRoles.get('287139107199516672')
+            const applicantRole   = guildRoles.get('531713467619475456')
+
             if (applicantMember) {
                 await applicantMember.addRole(role.id)
 
-                if (serverOwnerRole && !applicantMember.roles.includes(serverOwnerRole.id)) {
+                if (memberRole && !applicantMember.roles.includes(memberRole.id)) {
+                    await applicantMember.addRole(memberRole.id)
+                } if (serverOwnerRole && !applicantMember.roles.includes(serverOwnerRole.id)) {
                     await applicantMember.addRole(serverOwnerRole.id)
                 } if (applicantRole && applicantMember.roles.includes(applicantRole.id)) {
                     await applicantMember.removeRole(applicantRole.id)
