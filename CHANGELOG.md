@@ -1,3 +1,10 @@
+## [1.27.1](https://github.com/DiscordHotline/application-plugin/compare/v1.27.0...v1.27.1) (2019-02-24)
+
+
+### Bug Fixes
+
+* **approveOrDeny:** Add member role if missing ([504f7ea](https://github.com/DiscordHotline/application-plugin/commit/504f7ea))
+
 # [1.27.0](https://github.com/DiscordHotline/application-plugin/compare/v1.26.0...v1.27.0) (2019-02-20)
 
 
