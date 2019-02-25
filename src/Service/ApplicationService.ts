@@ -8,7 +8,7 @@ import * as transliteration from 'transliteration';
 import {Connection, Repository} from 'typeorm';
 import {Logger} from 'winston';
 
-import Application, {ApprovalType, VoteResults, VoteType, ApprovalColor} from '../Entity/Application';
+import Application, {ApprovalColor, ApprovalType, VoteResults, VoteType} from '../Entity/Application';
 import Guild from '../Entity/Guild';
 import HotlineInvite from '../Entity/Invite';
 import {Config} from '../index';

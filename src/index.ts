@@ -1,9 +1,9 @@
-import 'source-map-support/register';
 import * as eris from 'eris';
-import {Member, Role, Invite as discordInvite} from 'eris';
+import {Invite as discordInvite, Member, Role} from 'eris';
 import {AbstractPlugin} from 'eris-command-framework';
 import Decorator from 'eris-command-framework/Decorator';
 import {Container, inject, injectable} from 'inversify';
+import 'source-map-support/register';
 import {In} from 'typeorm';
 
 import {Application, Guild, Invite as HotlineInvite} from './Entity';
@@ -14,14 +14,14 @@ import ApplicationService from './Service/ApplicationService';
 import Types from './types';
 
 export interface Config {
-    hotlineGuildId    : string;
-    approvalChannel   : string;
-    voteChannel       : string;
+    hotlineGuildId: string;
+    approvalChannel: string;
+    voteChannel: string;
     discussionCategory: string;
-    inviteChannel     : string;
-    serverOwnerRole   : string;
-    serverListChannel : string;
-    dividerRole       : string
+    inviteChannel: string;
+    serverOwnerRole: string;
+    serverListChannel: string;
+    dividerRole: string;
 }
 
 export const Entities = {Application, Guild, Invite: HotlineInvite};
@@ -66,17 +66,64 @@ export default class Plugin extends AbstractPlugin {
         this.client.on('guildMemberUpdate', this.onGuildMemberChange.bind(this, false));
     }
 
-    @Decorator.Command('color', 'Updates a role color', 'Updates the role color for the given guild.')
-    @Decorator.Permission('color.update')
-    public async updateColorCommand(): Promise<void> {
-        return this.reply('The color command isn\'t implemented yet.');
+    @Decorator.Command('role color', 'Updates a role color', 'Updates the role color for the given guild.')
+    public async updateRoleColorCommand(guildId: string, color: string): Promise<void> {
+        const colorRe = /^#?([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/;
+        if (!colorRe.test(color)) {
+            return this.reply('That doesn\'t look like a valid color. Please provide a hex color.');
+        }
+
+        const guild = await this.getRepository<Guild>(Guild).findOne({guildId});
+        if (!guild) {
+            return this.reply('That doesn\'t look like a valid guild. Please provide a guild id.');
+        }
+        if (!guild.roleId) {
+            return this.reply('That guild hasn\'t been claimed yet! Please claim it first.');
+        }
+        if (!guild.owners.includes(this.context.user.id)) {
+            return this.reply('You aren\'t the owner / representative of this guild.');
+        }
+
+        color              = color.replace(/^#/, '');
+        const colorInteger = parseInt(color, 16);
+
+        const hotline = this.client.guilds.get(Plugin.Config.hotlineGuildId);
+        const role    = hotline.roles.get(guild.roleId);
+        await role.edit({color: colorInteger});
+
+        return this.reply('Your role color has been updated for: ' + role.mention);
+    }
+
+    @Decorator.Command('role name', 'Updates a role name', 'Updates the role name for the given guild.')
+    public async updateRoleNameCommand(guildId: string, @Decorator.Remainder() name: string): Promise<void> {
+        const nameRe = /^[A-Za-z-_\s]+$/;
+        if (!nameRe.test(name)) {
+            return this.reply('That doesn\'t look like a valid color. Please provide a hex color.');
+        }
+
+        const guild = await this.getRepository<Guild>(Guild).findOne({guildId});
+        if (!guild) {
+            return this.reply('That doesn\'t look like a valid guild. Please provide a guild id.');
+        }
+        if (!guild.roleId) {
+            return this.reply('That guild hasn\'t been claimed yet! Please claim it first.');
+        }
+        if (!guild.owners.includes(this.context.user.id)) {
+            return this.reply('You aren\'t the owner / representative of this guild.');
+        }
+
+        const hotline = this.client.guilds.get(Plugin.Config.hotlineGuildId);
+        const role    = hotline.roles.get(guild.roleId);
+        await role.edit({name});
+
+        return this.reply('Your role name has been updated for: ' + role.mention);
     }
 
     @Decorator.Command('list update', 'Updates the servers list')
     @Decorator.Permission('list.update')
     public async updateGuildList(): Promise<void> {
-        await this.appService.updateServerList()
-        await this.reactOk()
+        await this.appService.updateServerList();
+        await this.reactOk();
     }
 
     @Decorator.Command('guild owner', 'Toggles a guild owner for the given guild')
@@ -212,10 +259,10 @@ export default class Plugin extends AbstractPlugin {
     public async ClaimCommand(inviteUrl: string, @Decorator.Remainder() role: Role): Promise<void> {
         await this.context.message.delete();
 
-        const repo   = this.getRepository<Guild>(Guild);
-        const re     = /https:\/\/discord.gg\//;
+        const repo = this.getRepository<Guild>(Guild);
+        const re   = /https:\/\/discord.gg\//;
         let invite: discordInvite;
-        
+
         try {
             invite = await this.client.getInvite(inviteUrl.replace(re, ''));
         } catch (error) {
@@ -223,7 +270,7 @@ export default class Plugin extends AbstractPlugin {
         }
 
         if (invite.temporary) {
-            return this.reply('Your invite is not permanent.')
+            return this.reply('Your invite is not permanent.');
         }
 
         const guild = await repo.findOne({roleId: role.id});
@@ -292,7 +339,7 @@ export default class Plugin extends AbstractPlugin {
      * Leave all guilds we don't have DB records for.
      */
     private async leaveBadGuilds(): Promise<void> {
-        const guilds  = await this.getRepository<Guild>(Guild).find();
+        const guilds = await this.getRepository<Guild>(Guild).find();
 
         this.logger.info(`Current a member of ${this.client.guilds.size - 1} guilds, with ${guilds.length} in the db.`);
         for (const guild of this.client.guilds.values()) {
@@ -303,10 +350,10 @@ export default class Plugin extends AbstractPlugin {
             const hasGuild = guilds.findIndex((x) => x.guildId === guild.id) >= 0;
             if (!hasGuild) {
                 this.logger.info('Found a bad guild. Leaving: %s - %s', guild.name, guild.id);
-                const notificationChannel = this.client.getChannel('526158510279360532') as eris.TextChannel
+                const notificationChannel = this.client.getChannel('526158510279360532') as eris.TextChannel;
 
                 if (notificationChannel) {
-                    await notificationChannel.createMessage(`Found a bad guild: \`${guild.name} - ${guild.id}\`. Owner is <@${guild.ownerID}>`)
+                    await notificationChannel.createMessage(`Found a bad guild: \`${guild.name} - ${guild.id}\`. Owner is <@${guild.ownerID}>`);
                 }
                 // await guild.leave();
             }

@@ -45,6 +45,10 @@ export default class ApplicationVoteListener {
         _emoji: { id: string, name: string },
         userId: string,
     ): Promise<void> {
+        if (!voteMessage || !voteMessage.channel) {
+            return;
+        }
+
         voteMessage = await this.client.getMessage(voteMessage.channel.id, voteMessage.id);
         if (!voteMessage.channel || voteMessage.channel.id !== this.voteChannel.id) {
             return;
