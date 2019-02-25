@@ -1,3 +1,11 @@
+## [1.28.1](https://github.com/DiscordHotline/application-plugin/compare/v1.28.0...v1.28.1) (2019-02-25)
+
+
+### Bug Fixes
+
+* **color:** Removing hex shorthand ([74ad574](https://github.com/DiscordHotline/application-plugin/commit/74ad574))
+* **roleName:** Fixing error message for bad name ([d6aa715](https://github.com/DiscordHotline/application-plugin/commit/d6aa715))
+
 # [1.28.0](https://github.com/DiscordHotline/application-plugin/compare/v1.27.1...v1.28.0) (2019-02-25)
 
 
