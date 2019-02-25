@@ -96,9 +96,10 @@ export default class Plugin extends AbstractPlugin {
 
     @Decorator.Command('role name', 'Updates a role name', 'Updates the role name for the given guild.')
     public async updateRoleNameCommand(guildId: string, @Decorator.Remainder() name: string): Promise<void> {
-        const nameRe = /^[A-Za-z-_\s]+$/;
+        const nameRe = /^[0-9A-Za-z-_\s]+$/;
         if (!nameRe.test(name)) {
-            return this.reply('That doesn\'t look like a valid color. Please provide a hex color.');
+            // tslint:disable-next-line:max-line-length
+            return this.reply('That doesn\'t look like a valid name. Name should be alphanumeric and can contain spaces, dashes and underscores.');
         }
 
         const guild = await this.getRepository<Guild>(Guild).findOne({guildId});
