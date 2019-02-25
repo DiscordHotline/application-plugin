@@ -1,3 +1,18 @@
+# [1.28.0](https://github.com/DiscordHotline/application-plugin/compare/v1.27.1...v1.28.0) (2019-02-25)
+
+
+### Bug Fixes
+
+* **tests:** Fixing peer dependencies ([8d2134d](https://github.com/DiscordHotline/application-plugin/commit/8d2134d))
+* **tests:** Fixing peer dependencies ([4cbbbae](https://github.com/DiscordHotline/application-plugin/commit/4cbbbae))
+* **tests:** Fixing peer dependencies ([c50f2c9](https://github.com/DiscordHotline/application-plugin/commit/c50f2c9))
+* **tests:** Fixing peer dependencies ([0d074f9](https://github.com/DiscordHotline/application-plugin/commit/0d074f9))
+
+
+### Features
+
+* **commands:** New Role Management commands ([0b0dc3d](https://github.com/DiscordHotline/application-plugin/commit/0b0dc3d))
+
 ## [1.27.1](https://github.com/DiscordHotline/application-plugin/compare/v1.27.0...v1.27.1) (2019-02-24)
 
 
