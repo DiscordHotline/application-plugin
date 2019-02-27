@@ -67,6 +67,7 @@ export default class Plugin extends AbstractPlugin {
     }
 
     @Decorator.Command('role color', 'Updates a role color', 'Updates the role color for the given guild.')
+    @Decorator.Alias('role colour')
     public async updateRoleColorCommand(guildId: string, color: string): Promise<void> {
         const colorRe = /^#?([A-Fa-f0-9]{6})$/;
         if (!colorRe.test(color)) {
