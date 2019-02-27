@@ -1,3 +1,11 @@
+## [1.28.2](https://github.com/DiscordHotline/application-plugin/compare/v1.28.1...v1.28.2) (2019-02-27)
+
+
+### Bug Fixes
+
+* **commands:** Adding alias for role colour ([acc06d3](https://github.com/DiscordHotline/application-plugin/commit/acc06d3))
+* **Merge:** github.com:DiscordHotline/application-plugin ([d54c466](https://github.com/DiscordHotline/application-plugin/commit/d54c466))
+
 ## [1.28.1](https://github.com/DiscordHotline/application-plugin/compare/v1.28.0...v1.28.1) (2019-02-25)
 
 
