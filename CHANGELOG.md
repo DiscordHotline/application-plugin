@@ -1,3 +1,10 @@
+## [1.28.3](https://github.com/DiscordHotline/application-plugin/compare/v1.28.2...v1.28.3) (2019-03-08)
+
+
+### Bug Fixes
+
+* **claim:** Support all the available invite formats ([#5](https://github.com/DiscordHotline/application-plugin/issues/5)) ([940650d](https://github.com/DiscordHotline/application-plugin/commit/940650d))
+
 ## [1.28.2](https://github.com/DiscordHotline/application-plugin/compare/v1.28.1...v1.28.2) (2019-02-27)
 
 
