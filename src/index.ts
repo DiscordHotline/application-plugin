@@ -262,7 +262,7 @@ export default class Plugin extends AbstractPlugin {
         await this.context.message.delete();
 
         const repo = this.getRepository<Guild>(Guild);
-        const re   = /(https?:\/\/)?discord.gg\//;
+        const re   = /(https?:\/\/)?(discord\.gg|discordapp\.com\/invite)\//;
         let invite: discordInvite;
 
         try {
