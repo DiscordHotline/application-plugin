@@ -244,6 +244,27 @@ export default class ApplicationService {
                 }
             }
 
+            // Welcome message in Hotline
+            const offTopic = this.client.getChannel('204100839806205953') as TextChannel
+            if (offTopic) {
+                try {
+                    await offTopic.createMessage({
+                        embed: {
+                            title: `Welcome ${requester.mention}, from  ${role.mention}!`,
+                            fields: [
+                                { name: '**ID:**', value: requester.id },
+                                { name: '**Created On:**', value: new Date(requester.createdAt).toISOString() },
+                            ],
+                            thumbnail: {
+                                url: requester.avatar ? requester.avatarURL : requester.defaultAvatarURL
+                            }
+                        }
+                    })
+                } catch (err) {
+                    console.error('Failed to welcome new user in off-topic:', err)
+                }
+            }
+
             replyEmbed = {
                 embed: {
                     description: `Your application for ${application.guild.name} has passed!
