@@ -1,3 +1,11 @@
+# [1.29.0](https://github.com/DiscordHotline/application-plugin/compare/v1.28.3...v1.29.0) (2019-05-09)
+
+
+### Features
+
+* **approving:** Automatically add requestee as representative and member once their application passes ([ab6a9c4](https://github.com/DiscordHotline/application-plugin/commit/ab6a9c4))
+* **approving:** Welcome server representative/owner once their vote has passed ([da0e7d6](https://github.com/DiscordHotline/application-plugin/commit/da0e7d6))
+
 ## [1.28.3](https://github.com/DiscordHotline/application-plugin/compare/v1.28.2...v1.28.3) (2019-03-08)
 
 
