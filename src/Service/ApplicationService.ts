@@ -219,6 +219,8 @@ export default class ApplicationService {
             });
 
             application.guild.roleId = role.id;
+            application.guild.members.push(application.requestUser)
+            application.guild.owners.push(application.requestUser)
             await application.guild.save();
 
             await this.sortRoles();
