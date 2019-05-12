@@ -1,3 +1,10 @@
+## [1.30.1](https://github.com/DiscordHotline/application-plugin/compare/v1.30.0...v1.30.1) (2019-05-12)
+
+
+### Bug Fixes
+
+* **approving:** Wrap the fetching of invite in a trycatch in case the requestee didn't give a permanent one ([ef6fa42](https://github.com/DiscordHotline/application-plugin/commit/ef6fa42))
+
 # [1.30.0](https://github.com/DiscordHotline/application-plugin/compare/v1.29.0...v1.30.0) (2019-05-12)
 
 
