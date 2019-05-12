@@ -245,7 +245,9 @@ export default class ApplicationService {
             }
 
             // Welcome message in Hotline
-            const offTopic = this.client.getChannel('204100839806205953') as TextChannel
+            const offTopic    = this.client.getChannel('204100839806205953') as TextChannel
+            const guildInvite = (await this.getDiscordInvite(application.inviteCode)).guild
+
             if (offTopic) {
                 try {
                     await offTopic.createMessage({
@@ -257,6 +259,10 @@ export default class ApplicationService {
                             ],
                             thumbnail: {
                                 url: requester.avatar ? requester.avatarURL : requester.defaultAvatarURL
+                            },
+                            footer: {
+                                icon_url: `https://cdn.discordapp.com/icons/${guildInvite.id}/${guildInvite.icon}.png`,
+                                text: `${guildInvite.name} (${guildInvite.id})`
                             }
                         }
                     })
