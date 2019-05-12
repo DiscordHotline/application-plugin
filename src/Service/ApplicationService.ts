@@ -249,8 +249,8 @@ export default class ApplicationService {
             if (offTopic) {
                 try {
                     await offTopic.createMessage({
+                        content: `Welcome ${requester.mention}, from  ${role.mention}!`,
                         embed: {
-                            title: `Welcome ${requester.mention}, from  ${role.mention}!`,
                             fields: [
                                 { name: '**ID:**', value: requester.id },
                                 { name: '**Created On:**', value: new Date(requester.createdAt).toISOString() },
