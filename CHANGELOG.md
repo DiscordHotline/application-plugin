@@ -1,3 +1,15 @@
+# [1.30.0](https://github.com/DiscordHotline/application-plugin/compare/v1.29.0...v1.30.0) (2019-05-12)
+
+
+### Bug Fixes
+
+* **approving:** Moved welcome message outside embed so the mentions resolve ([c44cc97](https://github.com/DiscordHotline/application-plugin/commit/c44cc97))
+
+
+### Features
+
+* **approving:** Added guild icon & name to welcome message ([e48f3f0](https://github.com/DiscordHotline/application-plugin/commit/e48f3f0))
+
 # [1.29.0](https://github.com/DiscordHotline/application-plugin/compare/v1.28.3...v1.29.0) (2019-05-09)
 
 
