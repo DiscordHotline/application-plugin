@@ -1,4 +1,4 @@
-import {Client, Invite as discordInvite, Message, TextableChannel, TextChannel} from 'eris';
+import {Client, Invite as discordInvite, Message, TextableChannel, TextChannel, MessageContent} from 'eris';
 import {types as CFTypes} from 'eris-command-framework';
 import Embed from 'eris-command-framework/Model/Embed';
 import {inject, injectable} from 'inversify';
@@ -246,11 +246,16 @@ export default class ApplicationService {
 
             // Welcome message in Hotline
             const offTopic    = this.client.getChannel('204100839806205953') as TextChannel
-            const guildInvite = (await this.getDiscordInvite(application.inviteCode)).guild
 
             if (offTopic) {
+                // Try fetching guild invite
+                let guildInvite: discordInvite['guild']
                 try {
-                    await offTopic.createMessage({
+                    guildInvite = (await this.getDiscordInvite(application.inviteCode)).guild
+                } catch (_) {}
+
+                try {
+                    let welcomeMessage: MessageContent = {
                         content: `Welcome ${requester.mention}, from  ${role.mention}!`,
                         embed: {
                             fields: [
@@ -259,13 +264,18 @@ export default class ApplicationService {
                             ],
                             thumbnail: {
                                 url: requester.avatar ? requester.avatarURL : requester.defaultAvatarURL
-                            },
-                            footer: {
-                                icon_url: `https://cdn.discordapp.com/icons/${guildInvite.id}/${guildInvite.icon}.png`,
-                                text: `${guildInvite.name} (${guildInvite.id})`
                             }
                         }
-                    })
+                    }
+
+                    if (guildInvite) {
+                        welcomeMessage.embed.footer = {
+                            icon_url: `https://cdn.discordapp.com/icons/${guildInvite.id}/${guildInvite.icon}.png`,
+                            text: `${guildInvite.name} (${guildInvite.id})`
+                        }
+                    }
+
+                    await offTopic.createMessage(welcomeMessage)
                 } catch (err) {
                     console.error('Failed to welcome new user in off-topic:', err)
                 }
