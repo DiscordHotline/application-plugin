@@ -78,7 +78,7 @@ export default class ApplicationVoteListener {
 
         const applications: Application[] = await this.repo.find();
         for (const application of applications) {
-            if (application.voteApproved === ApprovalType.AWAITING) {
+            if (application.voteApproved === ApprovalType.AWAITING || application.voteApproved === ApprovalType.DENIED) {
                 continue;
             }
 
