@@ -100,7 +100,8 @@ export default class Plugin extends AbstractPlugin {
         const nameRe = /^[0-9A-Za-z-_\s]+$/;
         if (!nameRe.test(name)) {
             // tslint:disable-next-line:max-line-length
-            return this.reply('That doesn\'t look like a valid name. Name should be alphanumeric and can contain spaces, dashes and underscores.');
+            return this.reply(
+                'That doesn\'t look like a valid name. Name should be alphanumeric and can contain spaces, dashes and underscores.');
         }
 
         const guild = await this.getRepository<Guild>(Guild).findOne({guildId});
@@ -341,6 +342,12 @@ export default class Plugin extends AbstractPlugin {
      * Leave all guilds we don't have DB records for.
      */
     private async leaveBadGuilds(): Promise<void> {
+        if (process.env.ENVIRONMENT === 'dev' && !process.env.LEAVE_BAD_GUILDS) {
+            console.log('In development environment, not leaving bad guilds.');
+
+            return;
+        }
+
         const guilds = await this.getRepository<Guild>(Guild).find();
 
         this.logger.info(`Current a member of ${this.client.guilds.size - 1} guilds, with ${guilds.length} in the db.`);
@@ -355,7 +362,9 @@ export default class Plugin extends AbstractPlugin {
                 const notificationChannel = this.client.getChannel('526158510279360532') as eris.TextChannel;
 
                 if (notificationChannel) {
-                    await notificationChannel.createMessage(`Found a bad guild: \`${guild.name} - ${guild.id}\`. Owner is <@${guild.ownerID}>`);
+                    await notificationChannel.createMessage(
+                        `Found a bad guild: \`${guild.name} - ${guild.id}\`. Owner is <@${guild.ownerID}>`,
+                    );
                 }
                 // await guild.leave();
             }
