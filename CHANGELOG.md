@@ -1,3 +1,10 @@
+## [1.31.1](https://github.com/DiscordHotline/application-plugin/compare/v1.31.0...v1.31.1) (2019-06-22)
+
+
+### Bug Fixes
+
+* **vote:** Skip vote message if application denied ([c52c714](https://github.com/DiscordHotline/application-plugin/commit/c52c714))
+
 # [1.31.0](https://github.com/DiscordHotline/application-plugin/compare/v1.30.1...v1.31.0) (2019-06-22)
 
 
