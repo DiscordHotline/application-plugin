@@ -1,3 +1,10 @@
+# [1.31.0](https://github.com/DiscordHotline/application-plugin/compare/v1.30.1...v1.31.0) (2019-06-22)
+
+
+### Features
+
+* **secrets:** Moving to AWS ([077cbf1](https://github.com/DiscordHotline/application-plugin/commit/077cbf1))
+
 ## [1.30.1](https://github.com/DiscordHotline/application-plugin/compare/v1.30.0...v1.30.1) (2019-05-12)
 
 
