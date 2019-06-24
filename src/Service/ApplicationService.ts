@@ -536,13 +536,13 @@ https://apply.hotline.gg/${invite.code}
                     color:       7506394,
                     author:      {
                         name:    `${requester.username}#${requester.discriminator}`,
-                        iconUrl: requester.avatarURL,
+                        icon_url: requester.avatarURL,
                     },
                     thumbnail:   {
                         url: `https://cdn.discordapp.com/icons/${invite.guild.id}/${invite.guild.icon}.webp`,
                     },
                     fields:      [
-                        {name: 'Invite: ', value: application.inviteCode, inline: true},
+                        {name: 'Invite: ', value: `https://discord.gg/${invite.code}`, inline: true},
                         {name: 'Members: ', value: `${invite.presenceCount} / ${invite.memberCount}`, inline: true},
                     ],
                     footer:      {
