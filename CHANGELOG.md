@@ -1,3 +1,10 @@
+## [1.31.2](https://github.com/DiscordHotline/application-plugin/compare/v1.31.1...v1.31.2) (2019-06-24)
+
+
+### Bug Fixes
+
+* **discussion:** Fixed invite link in embed ([bbbc43b](https://github.com/DiscordHotline/application-plugin/commit/bbbc43b))
+
 ## [1.31.1](https://github.com/DiscordHotline/application-plugin/compare/v1.31.0...v1.31.1) (2019-06-22)
 
 
