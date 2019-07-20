@@ -78,7 +78,7 @@ export default class ApplicationService {
         }
 
         const requester = await this.restClient.getRESTUser(application.requestUser);
-        let invite;
+        let invite: discordInvite;
         try {
             invite = await this.getDiscordInvite(application.inviteCode);
         } catch (e) {
@@ -101,7 +101,7 @@ export default class ApplicationService {
                 url: `https://cdn.discordapp.com/icons/${invite.guild.id}/${invite.guild.icon}.webp`,
             },
             fields:      [
-                {name: 'Invite: ', value: application.inviteCode, inline: true},
+                {name: 'Invite: ', value: `https://discord.gg/${invite.code}`, inline: true},
                 {name: 'Members: ', value: `${invite.presenceCount} / ${invite.memberCount}`, inline: true},
                 {
                     name:   'Votes',
