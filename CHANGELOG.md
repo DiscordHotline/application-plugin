@@ -1,3 +1,10 @@
+## [1.31.3](https://github.com/DiscordHotline/application-plugin/compare/v1.31.2...v1.31.3) (2019-07-29)
+
+
+### Bug Fixes
+
+* **voting:** Fixed fetching vote channel on init ([f078f6f](https://github.com/DiscordHotline/application-plugin/commit/f078f6f))
+
 ## [1.31.2](https://github.com/DiscordHotline/application-plugin/compare/v1.31.1...v1.31.2) (2019-06-24)
 
 
