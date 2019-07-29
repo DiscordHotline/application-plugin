@@ -27,11 +27,11 @@ export default class ApplicationVoteListener {
     }
 
     public async initialize(): Promise<void> {
-        this.client.on('ready', async () => {
+        this.client.once('ready', async () => {
             if (!this.config.voteChannel) {
                 throw new Error('Vote channel not set!');
             }
-            this.voteChannel = await this.client.getChannel(this.config.voteChannel) as TextableChannel;
+            this.voteChannel = this.client.getChannel(this.config.voteChannel) as TextableChannel;
             if (!this.voteChannel) {
                 throw new Error('Vote channel not found!');
             }

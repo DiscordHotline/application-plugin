@@ -37,7 +37,7 @@ export default class ApplicationApprovalListener {
     }
 
     public async initialize(): Promise<void> {
-        this.client.on('ready', async () => {
+        this.client.once('ready', async () => {
             if (!this.config.approvalChannel) {
                 throw new Error('Approval channel not set!');
             }
@@ -46,11 +46,11 @@ export default class ApplicationApprovalListener {
                 throw new Error('Vote channel not set!');
             }
 
-            this.approvalChannel = await this.client.getChannel(this.config.approvalChannel) as TextableChannel;
+            this.approvalChannel = this.client.getChannel(this.config.approvalChannel) as TextableChannel;
             if (!this.approvalChannel) {
                 throw new Error('Approval channel not found!');
             }
-            this.voteChannel = await this.client.getChannel(this.config.voteChannel) as TextableChannel;
+            this.voteChannel = this.client.getChannel(this.config.voteChannel) as TextableChannel;
             if (!this.voteChannel) {
                 throw new Error('Vote channel not found!');
             }
